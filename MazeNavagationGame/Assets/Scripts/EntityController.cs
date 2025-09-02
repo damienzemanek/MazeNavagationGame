@@ -12,6 +12,10 @@ public class EntityController : MonoBehaviour
     public InputAction ia_Pickup;
     public Action pickup;
 
+    public InputAction ia_Drop;
+    public Action drop;
+
+
     private void Awake()
     {
         Controls = new PlayerInputActions();
@@ -26,6 +30,10 @@ public class EntityController : MonoBehaviour
         ia_Pickup = Controls.Player.Pickup;
         ia_Pickup.Enable();
         ia_Pickup.performed += ctx => pickup?.Invoke();
+
+        ia_Drop = Controls.Player.Drop;
+        ia_Drop.Enable();
+        ia_Drop.performed += ctx => drop?.Invoke();
     }
 
     void OnDisable()
@@ -35,6 +43,9 @@ public class EntityController : MonoBehaviour
 
         pickup = null;
         ia_Pickup?.Disable();
+
+        drop = null;
+        ia_Drop?.Disable();
     }
 
 }

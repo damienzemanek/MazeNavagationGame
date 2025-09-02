@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itenName: Hammer
   itemPrefab: {fileID: 5403954003008848034, guid: ca73f695e18af2f4f9671fd3a8d235e6, type: 3}
+  pickupPrefab: {fileID: 5901015237064759560, guid: a897bc9d83eccb5438b39bbcb181ed24, type: 3}

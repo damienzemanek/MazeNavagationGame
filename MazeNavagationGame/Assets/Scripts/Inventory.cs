@@ -1,11 +1,13 @@
 using System;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 [RequireComponent(requiredComponent: typeof(EntityController))]
 public class Inventory : MonoBehaviour
 {
-    EntityController Controls;
+    [HideInInspector] public EntityController Controls;
     public Action<ItemSO> UseItem;
+    public Action StopUsingItem;
 
 
     [SerializeField] public InRangeDataEvent mInRangeData;
@@ -44,11 +46,14 @@ public class Inventory : MonoBehaviour
     private void OnEnable()
     {
         Controls.pickup += AttemptPickup;
+        Controls.drop += DropItem;
     }
 
     private void OnDisable()
     {
         Controls.pickup -= AttemptPickup;
+        Controls.drop -= DropItem;
+
     }
 
     public void AttemptPickup()
@@ -64,5 +69,21 @@ public class Inventory : MonoBehaviour
         UseItem?.Invoke(PickedUpItem);
         mInRangeData.NotInRange();
 
+    }
+
+    void DropItem()
+    {
+        if (PickedUpItem == null) return;
+
+        GameObject droppedPickup
+            = Instantiate(
+                PickedUpItem.pickupPrefab,
+                gameObject.transform.position,   
+                gameObject.transform.rotation,   
+                null               
+            );
+
+        PickedUpItem = null;
+        StopUsingItem?.Invoke();
     }
 }
