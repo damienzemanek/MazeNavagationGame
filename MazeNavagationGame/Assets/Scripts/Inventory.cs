@@ -9,38 +9,70 @@ public class Inventory : MonoBehaviour
     public Action<ItemSO> UseItem;
     public Action StopUsingItem;
 
+    [SerializeField] public ItemSO PickedUpItem;
 
-    [SerializeField] public InRangeDataEvent mInRangeData;
-    [SerializeField] ItemSO PickedUpItem;
     [Serializable]
-    public struct InRangeDataEvent
+    public class EventInRange
     {
         public bool inRange;
-        public ItemSO item;
-        public Action PickupCallBack;
-
-        public void NotInRange()
+        public Action CallbackToLocation;
+        public virtual void NotInRange()
         {
             inRange = false;
-            item = null;
-            PickupCallBack = null;
+            CallbackToLocation = null;
         }
 
-        public void InRange(ItemSO _item, Action _PickupCallback)
+        public virtual void InRange(Action _CallbackToLocation)
         {
             inRange = true;
-            item = _item;
-            PickupCallBack = _PickupCallback;
+            CallbackToLocation = _CallbackToLocation;
         }
     }
 
+    [Serializable]
+    public class EventInRangePickup : EventInRange
+    {
+        public ItemSO item;
+        public override void NotInRange()
+        {
+            base.NotInRange();
+            item = null;
+        }
+
+        public virtual void InRange(ItemSO _item, Action _CallbackToLocation)
+        {
+            base.InRange(_CallbackToLocation);
+            item = _item;
+        }
+    }
+
+    [Serializable]
+    public class EventInRangeUseItem : EventInRange
+    {
+        public bool hasCorrectItem;
+        public override void NotInRange()
+        {
+            base.NotInRange();
+            hasCorrectItem = false;
+        }
+
+        public virtual void InRange(Action _CallbackToLocation, bool _hasCorrectItem)
+        {
+            base.InRange(_CallbackToLocation);
+            hasCorrectItem = _hasCorrectItem;
+        }
+    }
+
+    [SerializeField] public EventInRangePickup PickupEvent;
+    [SerializeField] public EventInRangeUseItem UseEvent;
+    
 
 
 
     private void Awake()
     {
         Controls = GetComponent<EntityController>();
-        mInRangeData = new InRangeDataEvent();
+        PickupEvent = new EventInRangePickup();
     }
 
     private void OnEnable()
@@ -61,13 +93,13 @@ public class Inventory : MonoBehaviour
 
         print("Attempting Pickup");
         //Guard Clauses
-        if (!mInRangeData.inRange) return;
+        if (!PickupEvent.inRange) return;
 
         //This would be so much easier with OnCollisionEnter because i could use the collider other to get my stuff
-        PickedUpItem = mInRangeData.item;
-        mInRangeData.PickupCallBack?.Invoke();
+        PickedUpItem = PickupEvent.item;
+        PickupEvent.CallbackToLocation?.Invoke();
         UseItem?.Invoke(PickedUpItem);
-        mInRangeData.NotInRange();
+        PickupEvent.NotInRange();
 
     }
 
