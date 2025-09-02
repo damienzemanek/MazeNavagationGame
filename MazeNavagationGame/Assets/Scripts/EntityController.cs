@@ -2,11 +2,15 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[DefaultExecutionOrder(-1000)]
 public class EntityController : MonoBehaviour
 {
     public PlayerInputActions Controls;
     public InputAction ia_Move;
     public Func<Vector2> move;
+
+    public InputAction ia_Pickup;
+    public Action pickup;
 
     private void Awake()
     {
@@ -18,12 +22,19 @@ public class EntityController : MonoBehaviour
         ia_Move = Controls.Player.Move;
         ia_Move.Enable();
         move = () => ia_Move.ReadValue<Vector2>();
+
+        ia_Pickup = Controls.Player.Pickup;
+        ia_Pickup.Enable();
+        ia_Pickup.performed += ctx => pickup?.Invoke();
     }
 
     void OnDisable()
     {
         move = null;
-        ia_Move.Disable();
+        ia_Move?.Disable();
+
+        pickup = null;
+        ia_Pickup?.Disable();
     }
 
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(requiredComponent: typeof(EntityController))]
 public class EntityMovement : MonoBehaviour
 {
     EntityController Controls;
@@ -20,9 +21,9 @@ public class EntityMovement : MonoBehaviour
     void MovePlayer()
     {
         Vector2 moveInput = Controls.move != null ? Controls.move.Invoke() : Vector2.zero;
-        Debug.Log(moveInput);
+        //Debug.Log(moveInput);
 
-        //Normalize Speed
+        //Normalize Speed if moving diagnally
         if (moveInput.x != 0 && moveInput.y != 0)
         {
             moveAmount = moveMultiplier / 2;
@@ -33,7 +34,7 @@ public class EntityMovement : MonoBehaviour
         }
 
 
-        //Actual Movement
+        //Actual Movement in cardinal directions
         if (moveInput.x != 0)
         {
             if (moveInput.x > 0.5)
@@ -49,10 +50,20 @@ public class EntityMovement : MonoBehaviour
                 rb.AddForce(-1 * moveAmount, 0, 0);
         }
 
+        RotatePlayerInLookDir(moveInput);
 
         //W -> (0, 1)
         //A -> (-1, 0)
         //S -> (0, -1))
         //D -> (1, 0)
+    }
+
+    void RotatePlayerInLookDir(Vector2 moveInput)
+    {
+        Vector3 moveDir = new Vector3(moveInput.x, 0, moveInput.y);
+
+        if (moveDir == Vector3.zero) return;
+        Quaternion targetRot = Quaternion.LookRotation(moveDir);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 10f * Time.deltaTime);
     }
 }
