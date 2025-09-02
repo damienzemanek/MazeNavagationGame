@@ -1,8 +1,11 @@
+using System.Collections;
 using UnityEngine;
 
 public class Breakable : MonoBehaviour, Location
 {
     public ItemSO itemToUse;
+    public GameObject effect;
+
 
     //Using update cause you dont want me to use colliders. 
     private void Update()
@@ -33,7 +36,15 @@ public class Breakable : MonoBehaviour, Location
 
     public void Use()
     {
+        print("Using");
+        effect.SetActive(true);
+        StartCoroutine(DelayDestroy());
+    }
 
+    IEnumerator DelayDestroy()
+    {
+        yield return new WaitForSeconds(1);
+        Destroy(gameObject);
     }
 
     public bool IsItemCorrect()

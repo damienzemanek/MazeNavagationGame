@@ -15,6 +15,9 @@ public class EntityController : MonoBehaviour
     public InputAction ia_Drop;
     public Action drop;
 
+    public InputAction ia_Use;
+    public Action use;
+
 
     private void Awake()
     {
@@ -34,6 +37,10 @@ public class EntityController : MonoBehaviour
         ia_Drop = Controls.Player.Drop;
         ia_Drop.Enable();
         ia_Drop.performed += ctx => drop?.Invoke();
+
+        ia_Use = Controls.Player.Use;
+        ia_Use.Enable();
+        ia_Use.performed += ctx => use?.Invoke();
     }
 
     void OnDisable()
@@ -46,6 +53,9 @@ public class EntityController : MonoBehaviour
 
         drop = null;
         ia_Drop?.Disable();
+
+        use = null;
+        ia_Use?.Disable();
     }
 
 }

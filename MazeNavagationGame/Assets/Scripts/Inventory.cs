@@ -6,7 +6,7 @@ using static UnityEditor.Progress;
 public class Inventory : MonoBehaviour
 {
     [HideInInspector] public EntityController Controls;
-    public Action<ItemSO> UseItem;
+    public Action<ItemSO> EquipItem;
     public Action StopUsingItem;
 
     [SerializeField] public ItemSO PickedUpItem;
@@ -47,7 +47,7 @@ public class Inventory : MonoBehaviour
     }
 
     [Serializable]
-    public class EventInRangeUseItem : EventInRange
+    public class EventInRangeEquipItem : EventInRange
     {
         public bool hasCorrectItem;
         public override void NotInRange()
@@ -64,7 +64,7 @@ public class Inventory : MonoBehaviour
     }
 
     [SerializeField] public EventInRangePickup PickupEvent;
-    [SerializeField] public EventInRangeUseItem UseEvent;
+    [SerializeField] public EventInRangeEquipItem UseEvent;
     
 
 
@@ -79,13 +79,14 @@ public class Inventory : MonoBehaviour
     {
         Controls.pickup += AttemptPickup;
         Controls.drop += DropItem;
+        Controls.use += AttemptUse;
     }
 
     private void OnDisable()
     {
         Controls.pickup -= AttemptPickup;
         Controls.drop -= DropItem;
-
+        Controls.use -= AttemptUse;
     }
 
     public void AttemptPickup()
@@ -98,8 +99,17 @@ public class Inventory : MonoBehaviour
         //This would be so much easier with OnCollisionEnter because i could use the collider other to get my stuff
         PickedUpItem = PickupEvent.item;
         PickupEvent.CallbackToLocation?.Invoke();
-        UseItem?.Invoke(PickedUpItem);
+        EquipItem?.Invoke(PickedUpItem);
         PickupEvent.NotInRange();
+
+    }
+
+    public void AttemptUse()
+    {
+        print("Attempting Use");
+        if (!UseEvent.inRange) return;
+
+        UseEvent.CallbackToLocation?.Invoke();
 
     }
 

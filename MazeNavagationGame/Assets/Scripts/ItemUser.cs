@@ -13,13 +13,13 @@ public class ItemUser : MonoBehaviour
 
     private void OnEnable()
     {
-        inventory.UseItem += EquipItem;
+        inventory.EquipItem += EquipItem;
         inventory.StopUsingItem += StopUsingItem;
     }
 
     private void OnDisable()
     {
-        inventory.UseItem -= EquipItem;
+        inventory.EquipItem -= EquipItem;
         inventory.StopUsingItem -= StopUsingItem;
 
     }
