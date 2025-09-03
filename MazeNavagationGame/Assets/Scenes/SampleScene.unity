@@ -26526,7 +26526,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemToUse: {fileID: 11400000, guid: 0b6186d6b98fdfa46b2dc77adbe3bb09, type: 2}
-  effect: {fileID: 974317007}
+  uses:
+  - rid: 9200140519245611358
+  references:
+    version: 2
+    RefIds:
+    - rid: 9200140519245611358
+      type: {class: Break, ns: , asm: Assembly-CSharp}
+      data:
+        effect: {fileID: 974317007}
 --- !u!43 &1461794510
 Mesh:
   m_ObjectHideFlags: 0
@@ -26871,7 +26879,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 1604294081}
-  moveMultiplier: 18
+  moveMultiplier: 14
 --- !u!54 &1604294081
 Rigidbody:
   m_ObjectHideFlags: 0
