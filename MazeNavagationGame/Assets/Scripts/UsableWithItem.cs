@@ -12,6 +12,9 @@ public class UseWithItem : MonoBehaviour, Location
     public float dist;
     [SerializeField] public float distToPlayer { get => LocationServiceProvider.GetDistanceToPlayer(gameObject); }
     [SerializeField] public Location.InRange inRange;
+    [SerializeField] float _withinRange;
+    public float withinRange { get => _withinRange; set => _withinRange = value; }
+
 
     public ItemSO itemToUse;
     [SerializeReference] public List<Useable> uses;
@@ -21,14 +24,6 @@ public class UseWithItem : MonoBehaviour, Location
         print("Using");
         for(int i = 0; i < uses.Count; i++)
             uses[i].Use();
-
-        StartCoroutine(DelayDestroy());
-    }
-
-    IEnumerator DelayDestroy()
-    {
-        yield return new WaitForSeconds(1);
-        Destroy(gameObject);
     }
 
     public bool IsItemCorrect()
@@ -47,7 +42,7 @@ public class UseWithItem : MonoBehaviour, Location
         if (!IsItemCorrect()) return;
         if (!gameObject.TryGetComponent(out UseWithItem usable)) return;
 
-        if (distToPlayer <= 1f)
+        if (distToPlayer <= withinRange)
         {
             inRange.current = true;
 

@@ -8,6 +8,8 @@ public class Pickup : MonoBehaviour, Location
     public float dist;
     [SerializeField] public float distToPlayer { get => LocationServiceProvider.GetDistanceToPlayer(gameObject); }
     [SerializeField] public Location.InRange inRange;
+    [SerializeField] float _withinRange;
+    public float withinRange { get => _withinRange; set => _withinRange = value; }
 
     public void PickedUpItem()
     {
@@ -22,7 +24,7 @@ public class Pickup : MonoBehaviour, Location
         if (PlayerSingleton.Instance.gameObject.GetComponent<Inventory>().PickedUpItem != null) return;
         if (!gameObject.TryGetComponent(out Pickup pickup)) return;
 
-        if (distToPlayer <= 1f)
+        if (distToPlayer <= withinRange)
         {
             inRange.current = true;
 

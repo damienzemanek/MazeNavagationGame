@@ -4,8 +4,8 @@ using UnityEngine;
 
 public interface Location 
 {
-   // public abstract bool inRange { get; set; }
-
+    // public abstract bool inRange { get; set; }
+    public abstract float withinRange { get; set; }
     public abstract float distToPlayer { get; }
 
     [Serializable]

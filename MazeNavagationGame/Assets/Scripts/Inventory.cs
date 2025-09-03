@@ -112,6 +112,9 @@ public class Inventory : MonoBehaviour
 
         UseEvent.CallbackToLocation?.Invoke();
 
+        if (PickedUpItem.singleUse)
+            RemoveItem();
+
     }
 
     void DropItem()
@@ -126,6 +129,11 @@ public class Inventory : MonoBehaviour
                 null               
             );
 
+        RemoveItem();
+    }
+
+    void RemoveItem()
+    {
         PickedUpItem = null;
         StopUsingItem?.Invoke();
     }

@@ -15,3 +15,4 @@ MonoBehaviour:
   itenName: Gas Can
   itemPrefab: {fileID: 4523954865308178391, guid: eb1e7d54f90eb014586f4d10e1d61d35, type: 3}
   pickupPrefab: {fileID: 5104312633560130119, guid: dcd421ccea6952443913ca2f286e1ff0, type: 3}
+  singleUse: 1

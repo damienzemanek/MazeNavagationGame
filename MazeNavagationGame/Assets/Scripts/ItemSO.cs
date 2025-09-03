@@ -6,4 +6,5 @@ public class ItemSO : ScriptableObject
     public string itenName;
     public GameObject itemPrefab;
     public GameObject pickupPrefab;
+    public bool singleUse;
 }
