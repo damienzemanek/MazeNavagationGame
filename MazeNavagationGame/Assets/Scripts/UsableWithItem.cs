@@ -1,41 +1,20 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using static Location;
 
 
 public class UseWithItem : MonoBehaviour, Location
 {
+    public bool locationInRange;
+    public float dist;
+    [SerializeField] public float distToPlayer { get => LocationServiceProvider.GetDistanceToPlayer(gameObject); }
+    [SerializeField] public Location.InRange inRange;
+
     public ItemSO itemToUse;
     [SerializeReference] public List<Useable> uses;
-
-
-    //Using update cause you dont want me to use colliders. 
-    private void Update()
-    {
-        if (LocationServiceProvider.GetDistanceToPlayer(gameObject) <= 1f)
-            inRange = true;
-        else
-            inRange = false;
-    }
-
-    public bool inRange 
-    {
-        get => PlayerSingleton.Instance.GetComponent<Inventory>().UseEvent.inRange;
-
-        set
-        {
-            PlayerSingleton.Instance.GetComponent<Inventory>().UseEvent.inRange = value;
-
-            // + Guard Clauses
-            // + Not In range
-            if (value == false) { PlayerSingleton.Instance.GetComponent<Inventory>().UseEvent.NotInRange(); return; }
-            // + Has no Breakable script
-            if (!gameObject.TryGetComponent(out UseWithItem usable)) return;
-            //Pickup the Actual item
-            PlayerSingleton.Instance.GetComponent<Inventory>().UseEvent.InRange(usable.Use, IsItemCorrect());
-        }
-    }
 
     public void Use()
     {
@@ -58,5 +37,33 @@ public class UseWithItem : MonoBehaviour, Location
             return true;
         else
             return false;
+    }
+
+
+    //Using update cause you dont want me to use colliders. 
+    private void Update()
+    {
+        dist = distToPlayer;
+        if (!IsItemCorrect()) return;
+        if (!gameObject.TryGetComponent(out UseWithItem usable)) return;
+
+        if (distToPlayer <= 1f)
+        {
+            inRange.current = true;
+
+            inRange.Toggle(
+                () => PlayerSingleton.Instance.GetComponent<Inventory>().UseEvent.InRange(usable.Use),
+                () => PlayerSingleton.Instance.GetComponent<Inventory>().UseEvent.NotInRange()
+            );
+        }
+        else
+        {
+            inRange.current = false;
+
+            inRange.Toggle(
+                () => PlayerSingleton.Instance.GetComponent<Inventory>().UseEvent.InRange(usable.Use),
+                () => PlayerSingleton.Instance.GetComponent<Inventory>().UseEvent.NotInRange()
+            );
+        }
     }
 }

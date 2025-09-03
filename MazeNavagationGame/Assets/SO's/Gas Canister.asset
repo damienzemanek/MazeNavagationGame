@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f140b67e81dc1d847878dfa001faca4e, type: 3}
+  m_Name: Gas Canister
+  m_EditorClassIdentifier: 
+  itenName: Gas Can
+  itemPrefab: {fileID: 4523954865308178391, guid: eb1e7d54f90eb014586f4d10e1d61d35, type: 3}
+  pickupPrefab: {fileID: 5104312633560130119, guid: dcd421ccea6952443913ca2f286e1ff0, type: 3}

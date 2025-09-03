@@ -43,6 +43,7 @@ public class Inventory : MonoBehaviour
         {
             base.InRange(_CallbackToLocation);
             item = _item;
+            print($"In Range, item {item}");
         }
     }
 
@@ -64,7 +65,7 @@ public class Inventory : MonoBehaviour
     }
 
     [SerializeField] public EventInRangePickup PickupEvent;
-    [SerializeField] public EventInRangeEquipItem UseEvent;
+    [SerializeField] public EventInRange UseEvent;
     
 
 
@@ -92,7 +93,7 @@ public class Inventory : MonoBehaviour
     public void AttemptPickup()
     {
 
-        print("Attempting Pickup");
+        print($"Attempting Pickup [{PickupEvent.item}]");
         //Guard Clauses
         if (!PickupEvent.inRange) return;
 
