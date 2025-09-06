@@ -245,7 +245,6 @@ MonoBehaviour:
   importanceData: {fileID: 11400000, guid: 9c256bac94d70b84e83d3e85939964df, type: 2}
   beliefs:
   - rid: 9200140586852810846
-  - rid: 9200140586852811073
   goals:
   - rid: 9200140586852811065
   - rid: 9200140586852811067
@@ -255,7 +254,10 @@ MonoBehaviour:
     - rid: 9200140586852810846
       type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
       data:
-        data: {x: 0, y: 0, z: 0}
+        data:
+        - {x: 0, y: 0, z: 0}
+        functionality:
+          rid: 9200140586852811083
     - rid: 9200140586852811065
       type: {class: Patrol, ns: , asm: Assembly-CSharp}
       data:
@@ -264,10 +266,9 @@ MonoBehaviour:
       type: {class: Stand, ns: , asm: Assembly-CSharp}
       data:
         _currentPriority: 0
-    - rid: 9200140586852811073
-      type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
-      data:
-        data: {x: 0, y: 0, z: 0}
+    - rid: 9200140586852811083
+      type: {class: BeliefMyLocation, ns: , asm: Assembly-CSharp}
+      data: 
 --- !u!1 &192075071
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GoapAgent : MonoBehaviour
@@ -14,7 +15,7 @@ public class GoapAgent : MonoBehaviour
 
     private void Start()
     {
-        InitialSetPriorities();
+        Initialize();
     }
 
     private void Update()
@@ -26,10 +27,15 @@ public class GoapAgent : MonoBehaviour
         }
     }
 
-    void InitialSetPriorities()
+    void Initialize()
     {
+        //Sets Current Priorities to the Initial set in the inspector
         foreach (AgentGoal goal in goals)
             goal.SetPriority(goal.initialPriority);
+
+        //Sets the belief's agents to this agent
+        foreach (IBelief b in beliefs)
+            b.SetAgent(this); 
     }
 
     IEnumerator PriorityManage()
@@ -41,8 +47,8 @@ public class GoapAgent : MonoBehaviour
 
 
             CheckBeliefs();
-            AgentGoal goal = ChoseGoal();
-            ActOnKnowledge();
+            //AgentGoal goal = ChoseGoal();
+            //ActOnKnowledge();
         }
     }
 

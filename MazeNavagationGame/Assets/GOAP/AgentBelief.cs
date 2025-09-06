@@ -14,6 +14,8 @@ public interface IBelief
     float timeStamp { get; set; }
 
     void UpdatePriorities(IReadOnlyList<IBelief> beliefs);
+
+    public abstract void SetAgent(GoapAgent agent);
 }
 
 
@@ -56,6 +58,8 @@ public abstract class Belief<T> : IBelief
     public T[] data;
     public abstract T[] UpdatePriorities(List<Belief<T>> beliefs);
 
+    public abstract void SetAgent(GoapAgent agent);
+
     public void UpdatePriorities(IReadOnlyList<IBelief> beliefs)
     {
         var interfaceBeliefsToTypeBeliefs = new List<Belief<T>>();
@@ -79,6 +83,11 @@ public class AgentBelief<T> : Belief<T>
 
     public AgentBelief() { }
     protected AgentBelief(string name) => Name = name;
+
+    public override void SetAgent(GoapAgent agent)
+    {
+        this.agent = agent;
+    }
 
     public override T[] UpdatePriorities(List<Belief<T>> beliefs) => data;
 }
