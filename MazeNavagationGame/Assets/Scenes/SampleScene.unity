@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 93272016}
   - component: {fileID: 93272015}
   - component: {fileID: 93272014}
-  - component: {fileID: 93272013}
+  - component: {fileID: 93272018}
   m_Layer: 0
   m_Name: Bear
   m_TagString: Untagged
@@ -139,29 +139,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &93272013
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 93272011}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ced127aa6f7be44eb28dd58e13b2d4a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Goals:
-  - rid: 9200140586852810826
-  references:
-    version: 2
-    RefIds:
-    - rid: 9200140586852810826
-      type: {class: NPC/Goal, ns: , asm: Assembly-CSharp}
-      data:
-        goalName: Location 1
-        loc: {fileID: 1592216755}
-        moving: 0
 --- !u!65 &93272014
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -251,6 +228,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &93272018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93272011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 861e9c729f4f7214ea27044a2e08faeb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  thinking: 0
+  importanceData: {fileID: 0}
+  beliefs:
+  - rid: 9200140586852810846
+  goals: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 9200140586852810846
+      type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
+      data: 
 --- !u!1 &192075071
 GameObject:
   m_ObjectHideFlags: 0
@@ -27181,7 +27181,6 @@ GameObject:
   - component: {fileID: 1604294082}
   - component: {fileID: 1604294083}
   - component: {fileID: 1604294084}
-  - component: {fileID: 1604294085}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -27229,7 +27228,7 @@ MonoBehaviour:
     m_SingletonActionBindings: []
     m_Flags: 0
   ia_Use:
-    m_Name: 
+    m_Name: Ia_Use
     m_Type: 0
     m_ExpectedControlType: 
     m_Id: 3675c348-cc0d-41a8-8427-6b00a1bf81e0
@@ -27415,18 +27414,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemSpawnLocation: {fileID: 1886325262}
---- !u!114 &1604294085
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1604294074}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af725608088c4c64497c52d8e16c7b3d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!43 &1660820366
 Mesh:
   m_ObjectHideFlags: 0
