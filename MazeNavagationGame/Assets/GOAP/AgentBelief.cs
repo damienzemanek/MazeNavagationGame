@@ -9,13 +9,15 @@ using Sirenix.OdinInspector;
 public interface IBelief
 {
     string key { get; }
+    float refreshDelay { get; set; }
     object boxedData { get; set; }
-    float Confidence { get; set; }
     float timeStamp { get; set; }
 
     void UpdatePriorities(IReadOnlyList<IBelief> beliefs);
 
     public abstract void SetAgent(GoapAgent agent);
+
+    public abstract float GetRefreshDelay();
 }
 
 
@@ -25,9 +27,9 @@ public class BeliefStates<T>
 
     public void Set(Belief<T> belief) => beliefs[belief.key] = belief;
 
-    public bool TryGet(string key, float minimumConfidence, out Belief<T> belief)
+    public bool TryGet(string key, out Belief<T> belief)
     {
-        if (beliefs.TryGetValue(key, out belief) && belief.Confidence >= minimumConfidence)
+        if (beliefs.TryGetValue(key, out belief))
             return true;
         //Else
         belief = null;
@@ -36,7 +38,7 @@ public class BeliefStates<T>
 
     public bool IsTrue(string key, float minimumConfidence = 0.6f)
     {
-        if(TryGet(key, minimumConfidence, out var belief))
+        if(TryGet(key, out var belief))
         {
             if (belief.data is bool b) return b;
         }
@@ -51,24 +53,27 @@ public class BeliefStates<T>
 public abstract class Belief<T> : IBelief
 {
     public string key { get; }
+    [ShowInInspector] public float refreshDelay { get; set; }
     public object boxedData { get => data; set => data = (T[])value; }
-    [ShowInInspector] public float Confidence { get; set; }
     public float timeStamp { get; set; }
 
     public T[] data;
     public abstract T[] UpdatePriorities(List<Belief<T>> beliefs);
 
     public abstract void SetAgent(GoapAgent agent);
+    public abstract float GetRefreshDelay();
+
+    private readonly List<Belief<T>> buffer = new(20);
 
     public void UpdatePriorities(IReadOnlyList<IBelief> beliefs)
     {
-        var interfaceBeliefsToTypeBeliefs = new List<Belief<T>>();
+        buffer.Clear();
 
         foreach (var b in beliefs)
             if (b is Belief<T> beliefTyped)
-                interfaceBeliefsToTypeBeliefs.Add(beliefTyped);
+                buffer.Add(beliefTyped);
 
-        data = UpdatePriorities(interfaceBeliefsToTypeBeliefs);
+        data = UpdatePriorities(buffer);
         timeStamp = Time.time;
     }
 
@@ -84,10 +89,9 @@ public class AgentBelief<T> : Belief<T>
     public AgentBelief() { }
     protected AgentBelief(string name) => Name = name;
 
-    public override void SetAgent(GoapAgent agent)
-    {
-        this.agent = agent;
-    }
+    public override void SetAgent(GoapAgent agent) => this.agent = agent;
+    public override float GetRefreshDelay() => refreshDelay;
+
 
     public override T[] UpdatePriorities(List<Belief<T>> beliefs) => data;
 }

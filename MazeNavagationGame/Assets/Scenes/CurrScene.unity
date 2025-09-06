@@ -241,10 +241,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   thinking: 0
-  thinkDelay: 3
+  thinkDelay: 0.1
   importanceData: {fileID: 11400000, guid: 9c256bac94d70b84e83d3e85939964df, type: 2}
   beliefs:
   - rid: 9200140586852810846
+  - rid: 9200140586852811092
   goals:
   - rid: 9200140586852811065
   - rid: 9200140586852811067
@@ -267,6 +268,16 @@ MonoBehaviour:
       data:
         _currentPriority: 0
     - rid: 9200140586852811083
+      type: {class: BeliefMyLocation, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9200140586852811092
+      type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
+      data:
+        data:
+        - {x: 0, y: 0, z: 0}
+        functionality:
+          rid: 9200140586852811093
+    - rid: 9200140586852811093
       type: {class: BeliefMyLocation, ns: , asm: Assembly-CSharp}
       data: 
 --- !u!1 &192075071

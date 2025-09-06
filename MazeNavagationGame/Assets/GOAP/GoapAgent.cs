@@ -75,7 +75,9 @@ public class GoapAgent : MonoBehaviour
         var givenBeliefs = (IReadOnlyList<IBelief>)beliefs;
         foreach(IBelief belief in beliefs)
         {
-            belief.UpdatePriorities(givenBeliefs);
+            bool dueToUpdate = belief.GetRefreshDelay() <= 0f || (Time.time - belief.timeStamp) >= belief.GetRefreshDelay();
+            if (dueToUpdate)
+                belief.UpdatePriorities(givenBeliefs);
         }
 
     }
