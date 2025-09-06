@@ -11,6 +11,8 @@ public class Pickup : MonoBehaviour, Location
     [SerializeField] float _withinRange;
     public float withinRange { get => _withinRange; set => _withinRange = value; }
 
+    float Location.distToPlayer => throw new NotImplementedException();
+
     public void PickedUpItem()
     {
         Destroy(gameObject);

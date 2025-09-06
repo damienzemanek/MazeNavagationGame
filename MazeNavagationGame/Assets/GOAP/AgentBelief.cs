@@ -53,7 +53,8 @@ public class BeliefStates<T>
 public abstract class Belief<T> : IBelief
 {
     public string key { get; }
-    [ShowInInspector] public float refreshDelay { get; set; }
+    [SerializeField] float _refreshDelay;
+    [ShowInInspector] public float refreshDelay { get => _refreshDelay; set => _refreshDelay = value; }
     public object boxedData { get => data; set => data = (T[])value; }
     public float timeStamp { get; set; }
 

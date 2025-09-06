@@ -15,7 +15,6 @@ public class UseWithItem : MonoBehaviour, Location
     [SerializeField] float _withinRange;
     public float withinRange { get => _withinRange; set => _withinRange = value; }
 
-
     public ItemSO itemToUse;
     [SerializeReference] public List<Useable> uses;
 

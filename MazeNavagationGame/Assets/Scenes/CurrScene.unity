@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 93272015}
   - component: {fileID: 93272014}
   - component: {fileID: 93272018}
+  - component: {fileID: 93272019}
   m_Layer: 0
   m_Name: Bear
   m_TagString: Untagged
@@ -255,6 +256,7 @@ MonoBehaviour:
     - rid: 9200140586852810846
       type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
       data:
+        _refreshDelay: 3
         data:
         - {x: 0, y: 0, z: 0}
         functionality:
@@ -262,17 +264,18 @@ MonoBehaviour:
     - rid: 9200140586852811065
       type: {class: Patrol, ns: , asm: Assembly-CSharp}
       data:
-        _currentPriority: 0
+        _initialPriority: 4
     - rid: 9200140586852811067
       type: {class: Stand, ns: , asm: Assembly-CSharp}
       data:
-        _currentPriority: 0
+        _initialPriority: 1
     - rid: 9200140586852811083
       type: {class: BeliefMyLocation, ns: , asm: Assembly-CSharp}
       data: 
     - rid: 9200140586852811092
       type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
       data:
+        _refreshDelay: 1
         data:
         - {x: 0, y: 0, z: 0}
         functionality:
@@ -280,6 +283,23 @@ MonoBehaviour:
     - rid: 9200140586852811093
       type: {class: BeliefMyLocation, ns: , asm: Assembly-CSharp}
       data: 
+--- !u!114 &93272019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93272011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a35bddb34666644a9c25f1aa12ddb2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dist: 0
+  inRange:
+    current: 0
+    last: 0
+  _withinRange: 6
 --- !u!1 &192075071
 GameObject:
   m_ObjectHideFlags: 0

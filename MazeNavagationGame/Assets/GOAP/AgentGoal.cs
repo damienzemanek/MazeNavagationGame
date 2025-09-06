@@ -7,8 +7,8 @@ using UnityEngine;
 [Serializable]
 public abstract class AgentGoal
 {
-    [ShowInInspector] public virtual int initialPriority { get; set; }
-    public abstract int currentPriority { get; set; }
+    public abstract int initialPriority { get; set; }
+    [ShowInInspector] public int currentPriority { get; set; }
 
     public int SetPriority(int amount) => currentPriority = amount;
 }
@@ -16,8 +16,8 @@ public abstract class AgentGoal
 [Serializable]
 public class Stand : AgentGoal
 {
-    public int _currentPriority;
-    public override int currentPriority { get => _currentPriority; set => _currentPriority = value; }
+    [SerializeField] int _initialPriority;
+    public override int initialPriority { get => _initialPriority; set => _initialPriority = value; }
 
 
 
@@ -26,8 +26,8 @@ public class Stand : AgentGoal
 [Serializable]
 public class Move : AgentGoal
 {
-    public int _currentPriority;
-    public override int currentPriority { get => _currentPriority; set => _currentPriority = value; }
+    [SerializeField] int _initialPriority;
+    public override int initialPriority { get => _initialPriority; set => _initialPriority = value; }
 
 
 
@@ -37,8 +37,8 @@ public class Move : AgentGoal
 [Serializable]
 public class Patrol : AgentGoal
 {
-    public int _currentPriority;
-    public override int currentPriority { get => _currentPriority; set => _currentPriority = value; }
+    [SerializeField] int _initialPriority;
+    public override int initialPriority { get => _initialPriority; set => _initialPriority = value; }
 
 
 
