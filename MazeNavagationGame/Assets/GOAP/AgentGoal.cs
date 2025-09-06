@@ -1,11 +1,13 @@
 using System;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 
 
 [Serializable]
 public abstract class AgentGoal
-{ 
+{
+    [ShowInInspector] public virtual int initialPriority { get; set; }
     public abstract int currentPriority { get; set; }
 
     public int SetPriority(int amount) => currentPriority = amount;

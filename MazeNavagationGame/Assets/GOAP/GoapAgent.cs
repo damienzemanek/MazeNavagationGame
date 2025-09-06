@@ -12,6 +12,11 @@ public class GoapAgent : MonoBehaviour
     [SerializeReference] public List<IBelief> beliefs = new();
     [SerializeReference] public List<AgentGoal> goals = new();
 
+    private void Start()
+    {
+        InitialSetPriorities();
+    }
+
     private void Update()
     {
         if (!thinking)
@@ -19,6 +24,12 @@ public class GoapAgent : MonoBehaviour
             thinking = true;
             StartCoroutine(PriorityManage());
         }
+    }
+
+    void InitialSetPriorities()
+    {
+        foreach (AgentGoal goal in goals)
+            goal.SetPriority(goal.initialPriority);
     }
 
     IEnumerator PriorityManage()

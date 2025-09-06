@@ -32,11 +32,11 @@ public abstract class Belief<T> : IBelief
     public string key { get; }
 
     [ShowInInspector] public BeliefType type { get; set; }
-    public object boxedData { get => data; set => data = (T)value; }
+    public object boxedData { get => data; set => data = (T[])value; }
     [ShowInInspector]  public float Confidence { get; set; }
     public float timeStamp { get; set; }
 
-    public T data;
+    public T[] data;
     public abstract T UpdatePriorities(List<Belief<T>> beliefs);
 
     public void UpdatePriorities(IReadOnlyList<IBelief> beliefs)
@@ -90,33 +90,62 @@ public class AgentBelief<T> : Belief<T>
     public override T UpdatePriorities(List<Belief<T>> beliefs) => valueFunc();
 }
 
+public interface IBeliefFunctionality<GoapAgent, T>
+{
+    public abstract void Do(GoapAgent agent, T[] data);
+
+}
+
+class BeliefMyLocation : IBeliefFunctionality<GoapAgent, Vector3>
+{
+    public void Do(GoapAgent agent, Vector3[] data) => SetMyLocation(agent, data);
+    Vector3 SetMyLocation(GoapAgent agent, Vector3[] data)
+    {
+        return agent.transform.position;
+    }
+}
+
+//class IBeliefSeesPointOfInterest : IBeliefFunctionality
+//{
+//    public bool SeesPointOfInterest();
+//}
+
+//class IBeliefMovingToPointOfInterest : IBeliefFunctionality
+//{
+//    public bool MovingToPointOfInterest();
+//}
 
 
 
 [Serializable]
 public class LocationBelief : AgentBelief<Vector3>
 {
-    Func<Vector3> observedLocation = () => Vector3.zero;
+    [SerializeReference] public IBeliefFunctionality<GoapAgent, Vector3> functionality;
+
+    Func<Vector3> location = () => Vector3.zero;
 
     public LocationBelief() { }
 
     public LocationBelief(string name, Func<Vector3> observedLocation) : base(name)
     {
-        this.observedLocation = observedLocation;
+        this.location = observedLocation;
     }
 
-    public Vector3 Location => observedLocation();
+    public Vector3 Location => location();
     public bool InRangeOf(Vector3 pos, float range) => Vector3.Distance(agent.transform.position, pos) < range;
 
     public override Vector3 UpdatePriorities(List<Belief<Vector3>> beliefs)
     {
-        return observedLocation();
+        return location();
     }
 
     public bool UpdatePriorities(List<Belief<Vector3>> beliefs, float dist)
     {
+        
+
         return InRangeOf(agent.transform.position, dist);
     }
+
 
     //Incr Confidence
     bool SeesPointOfInterest()
