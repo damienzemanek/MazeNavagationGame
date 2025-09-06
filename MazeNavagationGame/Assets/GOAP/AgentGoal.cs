@@ -12,6 +12,16 @@ public abstract class AgentGoal
 }
 
 [Serializable]
+public class Stand : AgentGoal
+{
+    public int _currentPriority;
+    public override int currentPriority { get => _currentPriority; set => _currentPriority = value; }
+
+
+
+}
+
+[Serializable]
 public class Move : AgentGoal
 {
     public int _currentPriority;
@@ -22,4 +32,13 @@ public class Move : AgentGoal
 }
 
 
+[Serializable]
+public class Patrol : AgentGoal
+{
+    public int _currentPriority;
+    public override int currentPriority { get => _currentPriority; set => _currentPriority = value; }
+
+
+
+}
 

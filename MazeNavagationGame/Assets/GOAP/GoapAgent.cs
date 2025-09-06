@@ -6,8 +6,10 @@ using UnityEngine;
 public class GoapAgent : MonoBehaviour
 {
     public bool thinking;
-    public ImportanceData importanceData;
-    [SerializeReference] public List<Belief> beliefs = new();
+    public float thinkDelay = 3f;
+
+    [SerializeReference] public ImportanceData importanceData;
+    [SerializeReference] public List<IBelief> beliefs = new();
     [SerializeReference] public List<AgentGoal> goals = new();
 
     private void Update()
@@ -23,36 +25,42 @@ public class GoapAgent : MonoBehaviour
     {
         while (thinking)
         {
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForSeconds(thinkDelay);
 
-            CheckGoals();
+
+
             CheckBeliefs();
+            AgentGoal goal = ChoseGoal();
             ActOnKnowledge();
         }
     }
 
-    void CheckGoals()
+    //Gets the goal with the highest priority
+    AgentGoal ChoseGoal()
     {
-        foreach (var goal in goals)
+        int highestPriorityGoalsIndex = 0;
+        int highestPriority = 0;
+
+        for(int i = 0;  i < goals.Count; i++)
         {
-            // simplest possible priority system:
-            // every frame, increase priority if any belief is true
-            foreach (var belief in beliefs)
+            if (goals[i].currentPriority > highestPriorityGoalsIndex)
             {
-                if (belief.Evaluate())
-                {
-                    goal.currentPriority++;
-                }
+                highestPriorityGoalsIndex = i;
+                highestPriority = goals[i].currentPriority;
             }
         }
+        return goals[highestPriorityGoalsIndex];
     }
 
+    //Alters goal's priorities based on beliefs
     void CheckBeliefs()
     {
-        foreach (var belief in beliefs)
+        var givenBeliefs = (IReadOnlyList<IBelief>)beliefs;
+        foreach(IBelief belief in beliefs)
         {
-            Debug.Log($"{belief.GetType().Name} evaluated to {belief.Evaluate()}");
+            belief.UpdatePriorities(givenBeliefs);
         }
+
     }
 
     void ActOnKnowledge()
