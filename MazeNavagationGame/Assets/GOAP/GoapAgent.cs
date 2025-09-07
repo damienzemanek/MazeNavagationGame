@@ -14,15 +14,12 @@ public class GoapAgent : MonoBehaviour
     //public ActionPlan actionPlan;
     public AgentAction currentAction;
 
-    [SerializeField] private List<ScriptableObject> beliefTemplates = new();
-
     [SerializeReference] public List<IBelief> beliefs = new();
     [SerializeReference] public List<AgentGoal> goals = new();
     [SerializeReference] public List<AgentAction> actions = new();
 
     private void Start()
     {
-        TakeInBeliefs();
         Initialize();
     }
 
@@ -37,21 +34,11 @@ public class GoapAgent : MonoBehaviour
 
     void Initialize()
     {
-        //Sets Current Priorities to the Initial set in the inspector
-        foreach (AgentGoal goal in goals)
-            goal.SetPriority(goal.initialPriority);
-    }
+        foreach (IBelief belief in beliefs)
+            belief.SetAgent(this);
 
-    void TakeInBeliefs()
-    {
-        beliefs.Clear();
-        beliefs = beliefTemplates
-            .Where(template => template != null)
-            .Select(template => Instantiate(template))
-            .OfType<IBelief>()
-            .Select(belief => { belief.SetAgent(this); return belief; })
-            .ToList();
-        
+        foreach (AgentGoal goal in goals)
+            if(goal != null) goal.SetPriority(goal.initialPriority);
     }
 
     void ReEvaluatePlan()
@@ -68,7 +55,7 @@ public class GoapAgent : MonoBehaviour
 
 
 
-            CheckBeliefs();
+            EvaluateBeliefs();
             //AgentGoal goal = ChoseGoal();
             //ActOnKnowledge();
         }
@@ -92,14 +79,14 @@ public class GoapAgent : MonoBehaviour
     }
 
     //Alters goal's priorities based on beliefs
-    void CheckBeliefs()
+    void EvaluateBeliefs()
     {
         var givenBeliefs = (IReadOnlyList<IBelief>)beliefs;
         foreach(IBelief belief in beliefs)
         {
             bool dueToUpdate = belief.GetRefreshDelay() <= 0f || (Time.time - belief.timeStamp) >= belief.GetRefreshDelay();
             if (dueToUpdate)
-                belief.UpdatePriorities(givenBeliefs);
+                belief.UpdateBelief(givenBeliefs);
         }
 
     }

@@ -3,28 +3,33 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using System.Linq;
 using Sirenix.Utilities;
+using System;
 
-public class AgentAction 
+
+[Serializable]
+public class AgentAction
 {
-    public string Name { get; }
-    [ShowInInspector] public float Cost { get; private set; }
+    public virtual string Name { get; set; }
+    [ShowInInspector] public virtual float Cost { get; private set; }
 
-    public HashSet<AgentBelief<T>> Preconditions { get; } = new HashSet<AgentBelief<T>>();
-    public HashSet<AgentBelief<T>> Effects { get; } = new HashSet<AgentBelief<T>>();
+    [SerializeField] public List<AgentBelief<T>> Preconditions = new List<AgentBelief<T>>();
+    [SerializeField] public List<AgentBelief<T>> Effects = new List<AgentBelief<T>>();
 
     IActionStrategy strategy;
     public bool Complete => strategy.Complete;
 
-    public void Start() => strategy.Start();
+    public virtual void Initialize() { }
 
-    public void Update(float deltaTime)
+    public virtual void Start() => strategy.Start();
+
+    public virtual void Update(float deltaTime)
     {
-        if(strategy.CanExecute) strategy.Update(deltaTime);
+        if (strategy.CanExecute) strategy.Update(deltaTime);
 
         if (!strategy.Complete) return;
 
-        Effects.ForEach(belief => belief.UpdatePriorities(Effects.ToList()));
+        Effects.ForEach(belief => belief.UpdateBelief(Effects.ToList()));
 
     }
-    public void Stop() => strategy.Stop();
+    public virtual void Stop() => strategy.Stop();
 }

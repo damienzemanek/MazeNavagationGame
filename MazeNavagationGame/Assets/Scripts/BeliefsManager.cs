@@ -2,28 +2,8 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using System.Linq;
-
-[CreateAssetMenu(fileName = "Nothing Belief", menuName = "ScriptableObjects/Beliefs")]
-[Serializable]
-public class NothingBelief : AgentBelief<bool>
-{
-    [SerializeReference] public IBeliefFunctionality<GoapAgent, bool> functionality;
-
-    public bool[] Nothing => data;
-
-    public NothingBelief(string name) : base(name) { }
-
-    public NothingBelief(string name, bool[] data) : base(name)
-    {
-        this.data = data;
-    }
-    public override bool[] UpdatePriorities(List<AgentBelief<bool>> beliefs)
-    {
-        data = functionality.Do(agent, data);
-        return Nothing;
-    }
-
-}
+using Sirenix.OdinInspector;
+using UnityEngine.AI;
 
 public interface IBeliefFunctionality<GoapAgent, T>
 {
@@ -31,18 +11,6 @@ public interface IBeliefFunctionality<GoapAgent, T>
 
 }
 
-[Serializable]
-class BeliefMyLocation : IBeliefFunctionality<GoapAgent, Vector3>
-{
-    private readonly Vector3[] buffer = new Vector3[1];
-
-    public Vector3[] Do(GoapAgent agent, Vector3[] data) => SetMyLocation(agent, data);
-    Vector3[] SetMyLocation(GoapAgent agent, Vector3[] data)
-    {
-        buffer[0] = agent.transform.position;
-        return buffer;
-    }
-}
 
 //class IBeliefSeesPointOfInterest : IBeliefFunctionality
 //{
@@ -55,8 +23,6 @@ class BeliefMyLocation : IBeliefFunctionality<GoapAgent, Vector3>
 //}
 
 
-
-[CreateAssetMenu(fileName = "Location Belief", menuName = "ScriptableObjects/Beliefs/Location")]
 [Serializable]
 public class LocationBelief : AgentBelief<Vector3>
 {
@@ -64,17 +30,83 @@ public class LocationBelief : AgentBelief<Vector3>
 
     public Vector3[] Location => data;
 
-    public LocationBelief(string name) : base(name) { }
+    public LocationBelief() { }
 
     public LocationBelief(string name, Vector3[] data) : base(name)
     {
         this.data = data;
     }
-    public override Vector3[] UpdatePriorities(List<AgentBelief<Vector3>> beliefs)
+    public override Vector3[] UpdateBelief(List<AgentBelief<Vector3>> beliefs)
     {
         data = functionality.Do(agent, data);
         return Location;
     }
 
+    [Serializable]
+    public class BeliefMyLocation : IBeliefFunctionality<GoapAgent, Vector3>
+    {
+        private readonly Vector3[] buffer = new Vector3[1];
+
+        public Vector3[] Do(GoapAgent agent, Vector3[] data) => SetMyLocation(agent, data);
+        Vector3[] SetMyLocation(GoapAgent agent, Vector3[] data)
+        {
+            buffer[0] = agent.transform.position;
+            return buffer;
+        }
+    }
+
 }
 
+[Serializable]
+public class BinaryBelief : AgentBelief<bool>
+{
+    [SerializeReference] public IBeliefFunctionality<GoapAgent, bool> functionality;
+
+    public bool[] Is => data;
+
+    public BinaryBelief() { }
+
+    public BinaryBelief(string name, bool[] data) : base(name)
+    {
+        this.data = data;
+    }
+    public override bool[] UpdateBelief(List<AgentBelief<bool>> beliefs)
+    {
+        data = functionality.Do(agent, data);
+        return Is;
+    }
+
+    [Serializable]
+    public class Nothing : IBeliefFunctionality<GoapAgent, bool>
+    {
+        private readonly bool[] buffer = new bool[1];
+
+        public bool[] Do(GoapAgent agent, bool[] data) => DoNothing(agent, data);
+        bool[] DoNothing(GoapAgent agent, bool[] data)
+        {
+            buffer[0] = true;
+            return buffer;
+        }
+    }
+
+    [Serializable]
+    public class BeliefAmIdling : IBeliefFunctionality<GoapAgent, bool>
+    {
+        private readonly bool[] buffer = new bool[1];
+
+        public bool[] Do(GoapAgent agent, bool[] data) => IsIdling(agent, data);
+        bool[] IsIdling(GoapAgent agent, bool[] data)
+        {
+            bool ret = true;
+
+            if (agent.GetComponent<NavMeshAgent>().velocity.magnitude > 0.01f)
+                ret = false;
+
+            buffer[0] = ret;
+            Debug.Log($"Checking Idle {buffer[0]}");
+
+            return buffer;
+        }
+    }
+
+}

@@ -13,17 +13,15 @@ public interface IBelief
     object boxedData { get; set; }
     float timeStamp { get; set; }
 
-    void UpdatePriorities(IReadOnlyList<IBelief> beliefs);
+    void UpdateBelief(IReadOnlyList<IBelief> beliefs);
 
-    public abstract void SetAgent(GoapAgent agent);
-
-    public abstract float GetRefreshDelay();
+    void SetAgent(GoapAgent agent);
+    float GetRefreshDelay();
 }
 
 
-
 [Serializable]
-public class AgentBelief<T> : ScriptableObject, IBelief
+public class AgentBelief<T> : IBelief
 {
     //Variables/properties
     protected GoapAgent agent;
@@ -39,20 +37,17 @@ public class AgentBelief<T> : ScriptableObject, IBelief
     //Methods
     public virtual void SetAgent(GoapAgent agent) => this.agent = agent;
     public virtual float GetRefreshDelay() => refreshDelay;
+    protected AgentBelief() { }
     protected AgentBelief(string name) => Name = name;
 
-    //Cloner
-    public static AgentBelief<T> CreateCopy(AgentBelief<T> copy)
-    {
-        return Instantiate(copy);
-    }
 
 
-    //Generic UpdatePriorities
-    public virtual T[] UpdatePriorities(List<AgentBelief<T>> beliefs) => data;
 
-    //Interface UpdatePriorities -> Generic
-    public void UpdatePriorities(IReadOnlyList<IBelief> beliefs)
+    //Generic UpdateBelief
+    public virtual T[] UpdateBelief(List<AgentBelief<T>> beliefs) => data;
+
+    //Interface UpdateBelief -> Generic
+    public void UpdateBelief(IReadOnlyList<IBelief> beliefs)
     {
         buffer.Clear();
 
@@ -60,9 +55,10 @@ public class AgentBelief<T> : ScriptableObject, IBelief
             if (b is AgentBelief<T> beliefTyped)
                 buffer.Add(beliefTyped);
 
-        data = UpdatePriorities(buffer);
+        data = UpdateBelief(buffer);
         timeStamp = Time.time;
     }
+
     private readonly List<AgentBelief<T>> buffer = new List<AgentBelief<T>>(20);
 
 
