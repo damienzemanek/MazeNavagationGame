@@ -30,7 +30,7 @@ public class LocationBelief : AgentBelief<Vector3>
 
     public Vector3[] Location => data;
 
-    public LocationBelief() { }
+    public LocationBelief() { data = new Vector3[1]; }
 
     public LocationBelief(string name, Vector3[] data) : base(name)
     {
@@ -64,7 +64,7 @@ public class BinaryBelief : AgentBelief<bool>
 
     public bool[] Is => data;
 
-    public BinaryBelief() { }
+    public BinaryBelief() { data = new bool[1]; }
 
     public BinaryBelief(string name, bool[] data) : base(name)
     {

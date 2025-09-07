@@ -244,13 +244,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thinking: 0
   thinkDelay: 0.1
+  currentGoal:
+    _initialPriority: 0
+    _DesiredEffects: []
   currentAction:
     Preconditions: []
     Effects: []
-  beliefs: []
+  orderedGoals:
+    rid: 9200140611604185247
   goals:
-  - rid: 9200140611604185231
-  - rid: 9200140611604185241
+  - rid: 9200140611604185256
   actions:
   - rid: 9200140611604185211
   - rid: 9200140611604185220
@@ -289,11 +292,24 @@ MonoBehaviour:
     - rid: 9200140611604185222
       type: {class: LocationBelief/BeliefMyLocation, ns: , asm: Assembly-CSharp}
       data: 
-    - rid: 9200140611604185231
-      type: {class: GoalSit, ns: , asm: Assembly-CSharp}
+    - rid: 9200140611604185247
+      type: {class: 'Stack`1[[IGoal, Assembly-CSharp]]', ns: System.Collections.Generic, asm: mscorlib}
       data: 
-    - rid: 9200140611604185241
-      type: {class: GoalWander, ns: , asm: Assembly-CSharp}
+    - rid: 9200140611604185256
+      type: {class: GoalSit, ns: , asm: Assembly-CSharp}
+      data:
+        _initialPriority: 1
+        _DesiredEffects:
+        - rid: 9200140611604185262
+    - rid: 9200140611604185262
+      type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
+      data:
+        _refreshDelay: 0
+        data: 00
+        functionality:
+          rid: 9200140611604185263
+    - rid: 9200140611604185263
+      type: {class: BinaryBelief/BeliefAmIdling, ns: , asm: Assembly-CSharp}
       data: 
 --- !u!114 &93272019
 MonoBehaviour:
