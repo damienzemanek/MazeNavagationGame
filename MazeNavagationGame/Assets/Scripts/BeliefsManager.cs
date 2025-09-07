@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine.AI;
+using static BinaryBelief;
 
 public interface ISensor<GoapAgent, T>
 {
@@ -22,6 +23,15 @@ public interface ISensor<GoapAgent, T>
 //    public bool M0ovingToPointOfInterest();
 //}
 
+public enum Beliefs
+{
+    NoBeliefFound,
+    Nothing,
+    MyLocation,
+    AmIdling
+}
+
+
 
 [Serializable]
 public class LocationBelief : AgentBelief<Vector3>
@@ -29,13 +39,18 @@ public class LocationBelief : AgentBelief<Vector3>
     [SerializeReference] public ISensor<GoapAgent, Vector3> functionality;
 
     public Vector3[] Location => data;
+    [ShowInInspector] public override Beliefs type
+    {
+        get
+        {
+            if (functionality is BeliefMyLocation)
+                return Beliefs.MyLocation;
 
+            return Beliefs.NoBeliefFound;
+        }
+    }
     public LocationBelief() { data = new Vector3[1]; }
 
-    public LocationBelief(string name, Vector3[] data) : base(name)
-    {
-        this.data = data;
-    }
     public override Vector3[] UpdateBelief(List<AgentBelief<Vector3>> beliefs)
     {
         data = functionality.Do(agent, data);
@@ -63,13 +78,20 @@ public class BinaryBelief : AgentBelief<bool>
     [SerializeReference] public ISensor<GoapAgent, bool> functionality;
 
     public bool[] Is => data;
+    [ShowInInspector] public override Beliefs type
+    {
+        get
+        {
+            if (functionality is Nothing)
+                return Beliefs.Nothing;
+            else if(functionality is BeliefAmIdling)
+                return Beliefs.AmIdling;
+
+            return Beliefs.NoBeliefFound;
+        }
+    }
 
     public BinaryBelief() { data = new bool[1]; }
-
-    public BinaryBelief(string name, bool[] data) : base(name)
-    {
-        this.data = data;
-    }
     public override bool[] UpdateBelief(List<AgentBelief<bool>> beliefs)
     {
         data = functionality.Do(agent, data);

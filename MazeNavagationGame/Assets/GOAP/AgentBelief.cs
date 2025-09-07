@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Sirenix.OdinInspector;
+using Unity.VisualScripting;
+using Sirenix.Serialization;
 
 
 //Interface for ODIN Serialization for inspector visual
 public interface IBelief
 {
-    string Name { get; }
+    Beliefs type { get; }
     Func<bool> condition { get; set; }
     bool refreshing { get; set; }
     float refreshDelay { get; set; }
@@ -18,7 +20,11 @@ public interface IBelief
     void UpdateBelief(IReadOnlyList<IBelief> beliefs);
     void SetAgent(GoapAgent agent);
     float GetRefreshDelay();
-     bool EvaluateCondition();
+    bool EvaluateCondition();
+    IBelief CreateCopy(IBelief copy);
+
+    Beliefs GetBelief();
+
 }
 
 
@@ -27,7 +33,8 @@ public class AgentBelief<T> : IBelief
 {
     //Variables/properties
     protected GoapAgent agent;
-    public string Name { get; set; }
+    [ShowInInspector][PropertyOrder(-10)] public virtual Beliefs type { get; }
+    public Beliefs GetBelief() => type;
     public Func<bool> condition { get; set; } = () => false;
     public string key { get; }
     [SerializeField] public bool refreshing { get; set; }
@@ -44,11 +51,19 @@ public class AgentBelief<T> : IBelief
     public virtual void SetAgent(GoapAgent agent) => this.agent = agent;
     public virtual float GetRefreshDelay() => refreshDelay;
     protected AgentBelief() { }
-    protected AgentBelief(string name) => Name = name;
+    protected AgentBelief(Beliefs type) => this.type = type;
 
     public bool EvaluateCondition() => condition();
 
+    public virtual IBelief CreateCopy(IBelief copy)
+    {
+        if (copy == null) return null;
 
+        var clone = SerializationUtility.CreateCopy(copy);
+
+        return (IBelief)clone;
+   
+    }
 
     //Generic UpdateBelief
     public virtual T[] UpdateBelief(List<AgentBelief<T>> beliefs) => data;
@@ -73,31 +88,3 @@ public class AgentBelief<T> : IBelief
 
 
 
-
-
-public class BeliefStates<T>
-{
-    private readonly Dictionary<string, AgentBelief<T>> beliefs = new();
-
-    public void Set(AgentBelief<T> belief) => beliefs[belief.Name] = belief;
-
-    public bool TryGet(string key, out AgentBelief<T> belief)
-    {
-        if (beliefs.TryGetValue(key, out belief))
-            return true;
-        //Else
-        belief = null;
-        return false;
-    }
-
-    public bool IsTrue(string key, float minimumConfidence = 0.6f)
-    {
-        if (TryGet(key, out var belief))
-        {
-            if (belief.data is bool b) return b;
-        }
-
-        return false;
-    }
-
-}

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public interface IGoal
 {
-    string Name { get; }
+    Goals type { get; }
     int initialPriority { get; }
     int currentPriority { get; set; }
     [SerializeField] List<IBelief> DesiredEffects { get; set; }
@@ -18,7 +18,8 @@ public interface IGoal
 [Serializable]
 public class AgentGoal : IGoal
 {
-    public string Name { get; }
+    [PropertyOrder(-10)] public virtual Goals type { get; }
+
     [SerializeField][PropertyOrder(0)] public int _initialPriority;
     public int initialPriority { get => _initialPriority; }
     [ShowInInspector][PropertyOrder(1)] public int currentPriority { get; set; }
@@ -30,9 +31,6 @@ public class AgentGoal : IGoal
     {
         GetDesiredEffects().ForEach(belief => belief.SetAgent(agent));
     }
-
-    public AgentGoal(string name) => Name = name; 
-
     public int SetPriority(int amount) => currentPriority = amount;
     public AgentGoal() { }
 }

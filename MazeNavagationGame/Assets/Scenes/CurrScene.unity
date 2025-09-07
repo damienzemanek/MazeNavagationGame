@@ -250,51 +250,12 @@ MonoBehaviour:
   currentAction:
     Preconditions: []
     Effects: []
-  orderedGoals:
-    rid: 9200140611604185247
   goals:
   - rid: 9200140611604185256
-  actions:
-  - rid: 9200140611604185211
-  - rid: 9200140611604185220
+  - rid: 9200140611604185468
   references:
     version: 2
     RefIds:
-    - rid: 9200140611604185211
-      type: {class: ActionRelax, ns: , asm: Assembly-CSharp}
-      data:
-        Preconditions: []
-        Effects:
-        - rid: 9200140611604185217
-    - rid: 9200140611604185217
-      type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
-      data:
-        _refreshDelay: 10
-        data: 
-        functionality:
-          rid: 9200140611604185218
-    - rid: 9200140611604185218
-      type: {class: BinaryBelief/Nothing, ns: , asm: Assembly-CSharp}
-      data: 
-    - rid: 9200140611604185220
-      type: {class: ActionWander, ns: , asm: Assembly-CSharp}
-      data:
-        Preconditions: []
-        Effects:
-        - rid: 9200140611604185221
-    - rid: 9200140611604185221
-      type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
-      data:
-        _refreshDelay: 0.5
-        data: []
-        functionality:
-          rid: 9200140611604185222
-    - rid: 9200140611604185222
-      type: {class: LocationBelief/BeliefMyLocation, ns: , asm: Assembly-CSharp}
-      data: 
-    - rid: 9200140611604185247
-      type: {class: 'Stack`1[[IGoal, Assembly-CSharp]]', ns: System.Collections.Generic, asm: mscorlib}
-      data: 
     - rid: 9200140611604185256
       type: {class: GoalSit, ns: , asm: Assembly-CSharp}
       data:
@@ -305,11 +266,39 @@ MonoBehaviour:
       type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
       data:
         _refreshDelay: 0
-        data: 00
+        data: 01
         functionality:
           rid: 9200140611604185263
     - rid: 9200140611604185263
       type: {class: BinaryBelief/BeliefAmIdling, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9200140611604185468
+      type: {class: GoalWander, ns: , asm: Assembly-CSharp}
+      data:
+        _initialPriority: 2
+        _DesiredEffects:
+        - rid: 9200140611604185469
+        - rid: 9200140611604185484
+    - rid: 9200140611604185469
+      type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
+      data:
+        _refreshDelay: 0
+        data: 00
+        functionality:
+          rid: 9200140611604185470
+    - rid: 9200140611604185470
+      type: {class: BinaryBelief/BeliefAmIdling, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9200140611604185484
+      type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
+      data:
+        _refreshDelay: 0
+        data:
+        - {x: 0, y: 0, z: 0}
+        functionality:
+          rid: 9200140611604185485
+    - rid: 9200140611604185485
+      type: {class: LocationBelief/BeliefMyLocation, ns: , asm: Assembly-CSharp}
       data: 
 --- !u!114 &93272019
 MonoBehaviour:

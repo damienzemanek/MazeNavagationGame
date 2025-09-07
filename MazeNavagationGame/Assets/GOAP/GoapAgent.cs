@@ -90,13 +90,27 @@ public class GoapAgent : MonoBehaviour
         print($"finished creating goal queue, count:[{GoalPriorityQueue.Count}]");
     }
 
+    HashSet<Beliefs> seen = new HashSet<Beliefs>();
+
     void CreateBeliefHashSet(List<IGoal> liveGoals)
     {
         HashSet<IBelief> ret = new HashSet<IBelief>();
-        liveGoals.ForEach(goal =>
-        {
-            goal.DesiredEffects.ForEach(belief => ret.Add(belief));
-        });
+        
+        liveGoals
+            .Where(goal => goal?.DesiredEffects != null)
+            .SelectMany(goal => goal.DesiredEffects)
+            .ToList() 
+            .ForEach(belief => 
+            {
+                print($"Checking belief {belief.GetBelief().ToString()}");
+                if (!seen.Contains(belief.type)) seen.Add(belief.type);
+                else return;
+
+                var copy = belief.CreateCopy(belief);
+                copy.refreshing = true;
+
+                ret.Add(copy);
+            });
 
         Beliefs = ret;
         print($"finished creating belief hash, count:[{Beliefs.Count}]");
