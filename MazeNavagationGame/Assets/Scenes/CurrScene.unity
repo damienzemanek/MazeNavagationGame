@@ -243,46 +243,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thinking: 0
   thinkDelay: 0.1
+  beliefTemplates:
+  - {fileID: 11400000, guid: cf13361a771b4eb4d8230e4545379168, type: 2}
   importanceData: {fileID: 11400000, guid: 9c256bac94d70b84e83d3e85939964df, type: 2}
   beliefs:
-  - rid: 9200140586852810846
-  - rid: 9200140586852811092
+  - rid: -2
+  - rid: -2
   goals:
-  - rid: 9200140586852811065
-  - rid: 9200140586852811067
+  - rid: -2
+  - rid: -2
   references:
     version: 2
     RefIds:
-    - rid: 9200140586852810846
-      type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
-      data:
-        _refreshDelay: 3
-        data:
-        - {x: 0, y: 0, z: 0}
-        functionality:
-          rid: 9200140586852811083
-    - rid: 9200140586852811065
-      type: {class: Patrol, ns: , asm: Assembly-CSharp}
-      data:
-        _initialPriority: 4
-    - rid: 9200140586852811067
-      type: {class: Stand, ns: , asm: Assembly-CSharp}
-      data:
-        _initialPriority: 1
-    - rid: 9200140586852811083
-      type: {class: BeliefMyLocation, ns: , asm: Assembly-CSharp}
-      data: 
-    - rid: 9200140586852811092
-      type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
-      data:
-        _refreshDelay: 1
-        data:
-        - {x: 0, y: 0, z: 0}
-        functionality:
-          rid: 9200140586852811093
-    - rid: 9200140586852811093
-      type: {class: BeliefMyLocation, ns: , asm: Assembly-CSharp}
-      data: 
+    - rid: -2
+      type: {class: , ns: , asm: }
 --- !u!114 &93272019
 MonoBehaviour:
   m_ObjectHideFlags: 0

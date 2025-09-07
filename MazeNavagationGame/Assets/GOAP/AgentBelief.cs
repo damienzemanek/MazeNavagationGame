@@ -8,7 +8,7 @@ using Sirenix.OdinInspector;
 //Interface for ODIN Serialization for inspector visual
 public interface IBelief
 {
-    string key { get; }
+    string Name { get; }
     float refreshDelay { get; set; }
     object boxedData { get; set; }
     float timeStamp { get; set; }
@@ -21,13 +21,64 @@ public interface IBelief
 }
 
 
+
+[Serializable]
+public class AgentBelief<T> : ScriptableObject, IBelief
+{
+    //Variables/properties
+    protected GoapAgent agent;
+    public string Name { get; set; }
+    public string key { get; }
+    [SerializeField] float _refreshDelay;
+    public float refreshDelay { get => _refreshDelay; set => _refreshDelay = value; }
+    public object boxedData { get => data; set => data = (T[])value; }
+    public float timeStamp { get; set; }
+
+    public T[] data;
+
+    //Methods
+    public virtual void SetAgent(GoapAgent agent) => this.agent = agent;
+    public virtual float GetRefreshDelay() => refreshDelay;
+    protected AgentBelief(string name) => Name = name;
+
+    //Cloner
+    public static AgentBelief<T> CreateCopy(AgentBelief<T> copy)
+    {
+        return Instantiate(copy);
+    }
+
+
+    //Generic UpdatePriorities
+    public virtual T[] UpdatePriorities(List<AgentBelief<T>> beliefs) => data;
+
+    //Interface UpdatePriorities -> Generic
+    public void UpdatePriorities(IReadOnlyList<IBelief> beliefs)
+    {
+        buffer.Clear();
+
+        foreach (var b in beliefs)
+            if (b is AgentBelief<T> beliefTyped)
+                buffer.Add(beliefTyped);
+
+        data = UpdatePriorities(buffer);
+        timeStamp = Time.time;
+    }
+    private readonly List<AgentBelief<T>> buffer = new List<AgentBelief<T>>(20);
+
+
+}
+
+
+
+
+
 public class BeliefStates<T>
 {
-    private readonly Dictionary<string, Belief<T>> beliefs = new();
+    private readonly Dictionary<string, AgentBelief<T>> beliefs = new();
 
-    public void Set(Belief<T> belief) => beliefs[belief.key] = belief;
+    public void Set(AgentBelief<T> belief) => beliefs[belief.Name] = belief;
 
-    public bool TryGet(string key, out Belief<T> belief)
+    public bool TryGet(string key, out AgentBelief<T> belief)
     {
         if (beliefs.TryGetValue(key, out belief))
             return true;
@@ -38,7 +89,7 @@ public class BeliefStates<T>
 
     public bool IsTrue(string key, float minimumConfidence = 0.6f)
     {
-        if(TryGet(key, out var belief))
+        if (TryGet(key, out var belief))
         {
             if (belief.data is bool b) return b;
         }
@@ -47,109 +98,3 @@ public class BeliefStates<T>
     }
 
 }
-
-
-[Serializable]
-public abstract class Belief<T> : IBelief
-{
-    public string key { get; }
-    [SerializeField] float _refreshDelay;
-    [ShowInInspector] public float refreshDelay { get => _refreshDelay; set => _refreshDelay = value; }
-    public object boxedData { get => data; set => data = (T[])value; }
-    public float timeStamp { get; set; }
-
-    public T[] data;
-    public abstract T[] UpdatePriorities(List<Belief<T>> beliefs);
-
-    public abstract void SetAgent(GoapAgent agent);
-    public abstract float GetRefreshDelay();
-
-    private readonly List<Belief<T>> buffer = new(20);
-
-    public void UpdatePriorities(IReadOnlyList<IBelief> beliefs)
-    {
-        buffer.Clear();
-
-        foreach (var b in beliefs)
-            if (b is Belief<T> beliefTyped)
-                buffer.Add(beliefTyped);
-
-        data = UpdatePriorities(buffer);
-        timeStamp = Time.time;
-    }
-
-}
-
-
-[Serializable]
-public class AgentBelief<T> : Belief<T>
-{
-    protected GoapAgent agent;
-    public string Name { get; }
-
-    public AgentBelief() { }
-    protected AgentBelief(string name) => Name = name;
-
-    public override void SetAgent(GoapAgent agent) => this.agent = agent;
-    public override float GetRefreshDelay() => refreshDelay;
-
-
-    public override T[] UpdatePriorities(List<Belief<T>> beliefs) => data;
-}
-
-public interface IBeliefFunctionality<GoapAgent, T>
-{
-    public abstract T[] Do(GoapAgent agent, T[] data);
-
-}
-
-class BeliefMyLocation : IBeliefFunctionality<GoapAgent, Vector3>
-{
-    private readonly Vector3[] buffer = new Vector3[1];
-
-    public Vector3[] Do(GoapAgent agent, Vector3[] data) => SetMyLocation(agent, data);
-    Vector3[] SetMyLocation(GoapAgent agent, Vector3[] data)
-    {
-        buffer[0] = agent.transform.position;
-        return buffer;
-    }
-}
-
-
-//class IBeliefSeesPointOfInterest : IBeliefFunctionality
-//{
-//    public bool SeesPointOfInterest();
-//}
-
-//class IBeliefMovingToPointOfInterest : IBeliefFunctionality
-//{
-//    public bool MovingToPointOfInterest();
-//}
-
-
-
-[Serializable]
-public class LocationBelief : AgentBelief<Vector3>
-{
-    [SerializeReference] public IBeliefFunctionality<GoapAgent, Vector3> functionality;
-
-    public Vector3[] Location => data;
-
-
-    public LocationBelief() { }
-
-    public LocationBelief(string name, Vector3[] data) : base(name)
-    {
-        this.data = data;
-    }
-    public bool InRangeOf(Vector3 pos, float range) => Vector3.Distance(agent.transform.position, pos) < range;
-
-    public override Vector3[] UpdatePriorities(List<Belief<Vector3>> beliefs)
-    {
-        data = functionality.Do(agent, data);
-        return Location;
-    }
-
-}
-
-

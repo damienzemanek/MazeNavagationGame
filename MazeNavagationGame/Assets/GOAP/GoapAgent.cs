@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -9,12 +10,19 @@ public class GoapAgent : MonoBehaviour
     public bool thinking;
     public float thinkDelay = 3f;
 
-    [SerializeReference] public ImportanceData importanceData;
+    public AgentGoal currentGoal;
+    //public ActionPlan actionPlan;
+    public AgentAction currentAction;
+
+    [SerializeField] private List<ScriptableObject> beliefTemplates = new();
+
     [SerializeReference] public List<IBelief> beliefs = new();
     [SerializeReference] public List<AgentGoal> goals = new();
+    [SerializeReference] public List<AgentAction> actions = new();
 
     private void Start()
     {
+        TakeInBeliefs();
         Initialize();
     }
 
@@ -32,10 +40,24 @@ public class GoapAgent : MonoBehaviour
         //Sets Current Priorities to the Initial set in the inspector
         foreach (AgentGoal goal in goals)
             goal.SetPriority(goal.initialPriority);
+    }
 
-        //Sets the belief's agents to this agent
-        foreach (IBelief b in beliefs)
-            b.SetAgent(this); 
+    void TakeInBeliefs()
+    {
+        beliefs.Clear();
+        beliefs = beliefTemplates
+            .Where(template => template != null)
+            .Select(template => Instantiate(template))
+            .OfType<IBelief>()
+            .Select(belief => { belief.SetAgent(this); return belief; })
+            .ToList();
+        
+    }
+
+    void ReEvaluatePlan()
+    {
+        currentAction = null;
+        currentAction = null;
     }
 
     IEnumerator PriorityManage()
