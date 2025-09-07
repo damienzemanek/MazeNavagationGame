@@ -13,7 +13,7 @@ public interface IBelief
     Beliefs type { get; }
     Func<bool> condition { get; set; }
     bool refreshing { get; set; }
-    float refreshDelay { get; set; }
+    float refreshDelay { get; }
     object boxedData { get; set; }
     float timeStamp { get; set; }
 
@@ -38,9 +38,15 @@ public class AgentBelief<T> : IBelief
     public Func<bool> condition { get; set; } = () => false;
     public string key { get; }
     [SerializeField] public bool refreshing { get; set; }
-
-    [SerializeField][ShowIf("refreshing")] float _refreshDelay;
-    public float refreshDelay { get => _refreshDelay; set => _refreshDelay = value; }
+    [ShowInInspector] public float refreshDelay
+    {
+        get
+        {
+            float val;
+            BeliefsManager.refreshRates.TryGetValue(GetBelief(), out val);
+            return val;
+        }
+    }
     public object boxedData { get => data; set => data = (T[])value; }
     public float timeStamp { get; set; }
 

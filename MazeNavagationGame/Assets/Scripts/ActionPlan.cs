@@ -1,39 +1,35 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using Priority_Queue;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
-
-public interface IGoapPlanner
-{
-    ActionPlan Plan(GoapAgent agent, List<AgentGoal> goals, AgentGoal mostRecentGoal = null);
-}
-
-public class Planner : IGoapPlanner
-{
-    public ActionPlan Plan(GoapAgent agent, List<AgentGoal> goals, AgentGoal mostRecentGoal = null)
-    {
-        List<AgentGoal> orderedGoals = goals
-            .Where(goal => goal.GetDesiredEffects().Any(belief => !belief.EvaluateCondition()))
-            .OrderByDescending(goal => goal == mostRecentGoal ? goal.currentPriority - 0.01 : goal.currentPriority)
-            .ToList();
-
-        return null;
-    }
-}
-
-
+[Serializable]
 public class ActionPlan 
 {
     public AgentGoal Goal { get; }
-    public Stack<AgentAction> Actions { get; }
+
+    [ShowInInspector] public SimplePriorityQueue<AgentAction, int> ActionPriorityQueue = new();
     public float totalCost { get; set; }
 
-    public ActionPlan(AgentGoal goal, Stack<AgentAction> actions, float totalCost)
+    public ActionPlan(AgentGoal goal, SimplePriorityQueue<AgentAction, int> queue, float totalCost)
     {
         Goal = goal;
-        Actions = actions;
+        ActionPriorityQueue = queue;
         this.totalCost = totalCost;
+    }
+
+    //AI gen function so i can see the queue in inspector
+    private List<AgentAction> GetActionQueueSnapshot()
+    {
+        // If you enqueued with NEGATED priorities (max-first), keep OrderBy(...)
+        return ActionPriorityQueue
+            .Select(a => new { A = a, P = ActionPriorityQueue.GetPriority(a) })
+            .OrderBy(x => x.P)          // most negative (i.e., highest real priority) first
+            .Select(x => x.A)
+            .ToList();
     }
 
 }

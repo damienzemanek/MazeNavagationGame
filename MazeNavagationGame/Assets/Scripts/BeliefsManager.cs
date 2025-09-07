@@ -23,6 +23,18 @@ public interface ISensor<GoapAgent, T>
 //    public bool M0ovingToPointOfInterest();
 //}
 
+public static class BeliefsManager
+{
+    public static Dictionary<Beliefs, float> refreshRates = new Dictionary<Beliefs, float>
+    {
+        {Beliefs.NoBeliefFound, 0},
+        {Beliefs.Nothing, 5},
+        {Beliefs.MyLocation, 0.5f},
+        {Beliefs.AmIdling, 0.49f}
+    };
+
+}
+
 public enum Beliefs
 {
     NoBeliefFound,

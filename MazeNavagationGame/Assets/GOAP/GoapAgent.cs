@@ -14,15 +14,14 @@ public class GoapAgent : MonoBehaviour
     public bool thinking;
     public float thinkDelay = 3f;
 
-    public AgentGoal currentGoal;
-    //public ActionPlan actionPlan;
+    [ShowInInspector] public IGoal currentGoal;
     public AgentAction currentAction;
+
     [ShowInInspector] public List<IGoal> GoalQueueView => GetGoalQueueSnapshot();
-    [ShowInInspector] public List<AgentAction> ActionQueueView => GetActionQueueSnapshot();
     [ShowInInspector] public List<IBelief> BeliefsHashView => Beliefs.ToList();
 
     public SimplePriorityQueue<IGoal, int> GoalPriorityQueue = new();
-    public SimplePriorityQueue<AgentAction, int> ActionPriorityQueue = new();
+    [ShowInInspector] public ActionPlan currentActionPlan;
 
     public HashSet<IBelief> Beliefs = new HashSet<IBelief>();
     [SerializeReference] public List<IGoal> goals = new();
@@ -65,19 +64,6 @@ public class GoapAgent : MonoBehaviour
             .OrderBy(x => x.P)              // most negative (highest real priority) first
             .Select(x => x.G)
             .ToList();
-    }
-    //AI gen function so i can see the queue in inspector
-    private List<AgentAction> GetActionQueueSnapshot()
-    {
-        // If you enqueued with NEGATED priorities (max-first), keep OrderBy(...)
-        return ActionPriorityQueue
-            .Select(a => new { A = a, P = ActionPriorityQueue.GetPriority(a) })
-            .OrderBy(x => x.P)          // most negative (i.e., highest real priority) first
-            .Select(x => x.A)
-            .ToList();
-
-        // If you DIDN'T negate when Enqueue'ing, use:
-        // .OrderByDescending(x => x.P)
     }
 
     void CreateGoalQueue(List<IGoal> goals)
@@ -133,8 +119,9 @@ public class GoapAgent : MonoBehaviour
 
 
             EvaluateBeliefs();
-            //AgentGoal goal = ChoseGoal();
-            //ActOnKnowledge();
+            IGoal goal = ChoseGoal();
+            print(goal.type.ToString());
+            DetermineActionPlan(goal);
         }
     }
 
@@ -152,42 +139,28 @@ public class GoapAgent : MonoBehaviour
                 highestPriority = goals[i].currentPriority;
             }
         }
+
+        currentGoal = goals[highestPriorityGoalsIndex];
         return goals[highestPriorityGoalsIndex];
     }
 
     //Alters goal's priorities based on beliefs
     void EvaluateBeliefs()
     {
-        //var givenBeliefs = (IReadOnlyList<IBelief>)beliefs;
-        //foreach(IBelief belief in beliefs)
-        //{
-        //    if (!belief.refreshing) return;
+       
+        foreach (IBelief belief in Beliefs)
+        {
+            if (!belief.refreshing) return;
 
-        //    bool dueToUpdate = belief.GetRefreshDelay() <= 0f || (Time.time - belief.timeStamp) >= belief.GetRefreshDelay();
-        //    if (dueToUpdate)
-        //        belief.UpdateBelief(givenBeliefs);
-        //}
+            bool dueToUpdate = belief.GetRefreshDelay() <= 0f || (Time.time - belief.timeStamp) >= belief.GetRefreshDelay();
+            if (dueToUpdate)
+                belief.UpdateBelief((IReadOnlyList<IBelief>)Beliefs.ToList());
+        }
 
     }
 
-    void ActOnKnowledge()
+    void DetermineActionPlan(IGoal chosenGoal)
     {
-        // pick the goal with the highest priority
-        IGoal topGoal = null;
-        int highest = int.MinValue;
 
-        foreach (var goal in goals)
-        {
-            if (goal.currentPriority > highest)
-            {
-                highest = goal.currentPriority;
-                topGoal = goal;
-            }
-        }
-
-        if (topGoal != null)
-        {
-            Debug.Log($"Acting on goal: {topGoal.GetType().Name} with priority {highest}");
-        }
     }
 }
