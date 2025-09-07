@@ -14,6 +14,12 @@ public class ActionRelax : AgentAction
 
 }
 
+[Serializable]
+public class ActionWander : AgentAction
+{
+
+}
+
 
 
 

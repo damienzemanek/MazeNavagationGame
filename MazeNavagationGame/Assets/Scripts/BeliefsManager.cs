@@ -5,7 +5,7 @@ using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine.AI;
 
-public interface IBeliefFunctionality<GoapAgent, T>
+public interface ISensor<GoapAgent, T>
 {
     public abstract T[] Do(GoapAgent agent, T[] data);
 
@@ -26,7 +26,7 @@ public interface IBeliefFunctionality<GoapAgent, T>
 [Serializable]
 public class LocationBelief : AgentBelief<Vector3>
 {
-    [SerializeReference] public IBeliefFunctionality<GoapAgent, Vector3> functionality;
+    [SerializeReference] public ISensor<GoapAgent, Vector3> functionality;
 
     public Vector3[] Location => data;
 
@@ -43,7 +43,7 @@ public class LocationBelief : AgentBelief<Vector3>
     }
 
     [Serializable]
-    public class BeliefMyLocation : IBeliefFunctionality<GoapAgent, Vector3>
+    public class BeliefMyLocation : ISensor<GoapAgent, Vector3>
     {
         private readonly Vector3[] buffer = new Vector3[1];
 
@@ -60,7 +60,7 @@ public class LocationBelief : AgentBelief<Vector3>
 [Serializable]
 public class BinaryBelief : AgentBelief<bool>
 {
-    [SerializeReference] public IBeliefFunctionality<GoapAgent, bool> functionality;
+    [SerializeReference] public ISensor<GoapAgent, bool> functionality;
 
     public bool[] Is => data;
 
@@ -77,7 +77,7 @@ public class BinaryBelief : AgentBelief<bool>
     }
 
     [Serializable]
-    public class Nothing : IBeliefFunctionality<GoapAgent, bool>
+    public class Nothing : ISensor<GoapAgent, bool>
     {
         private readonly bool[] buffer = new bool[1];
 
@@ -90,7 +90,7 @@ public class BinaryBelief : AgentBelief<bool>
     }
 
     [Serializable]
-    public class BeliefAmIdling : IBeliefFunctionality<GoapAgent, bool>
+    public class BeliefAmIdling : ISensor<GoapAgent, bool>
     {
         private readonly bool[] buffer = new bool[1];
 

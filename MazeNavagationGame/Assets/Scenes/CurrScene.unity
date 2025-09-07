@@ -247,45 +247,54 @@ MonoBehaviour:
   currentAction:
     Preconditions: []
     Effects: []
-  beliefs:
-  - rid: 9200140611604185198
-  - rid: 9200140611604185205
+  beliefs: []
   goals:
-  - rid: -2
-  - rid: -2
+  - rid: 9200140611604185231
+  - rid: 9200140611604185241
   actions:
   - rid: 9200140611604185211
+  - rid: 9200140611604185220
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
-    - rid: 9200140611604185198
-      type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
-      data:
-        _refreshDelay: 2
-        data:
-        - {x: 0, y: 0, z: 0}
-        functionality:
-          rid: 9200140611604185199
-    - rid: 9200140611604185199
-      type: {class: LocationBelief/BeliefMyLocation, ns: , asm: Assembly-CSharp}
-      data: 
-    - rid: 9200140611604185205
-      type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
-      data:
-        _refreshDelay: 0.5
-        data: 
-        functionality:
-          rid: 9200140611604185206
-    - rid: 9200140611604185206
-      type: {class: BinaryBelief/BeliefAmIdling, ns: , asm: Assembly-CSharp}
-      data: 
     - rid: 9200140611604185211
       type: {class: ActionRelax, ns: , asm: Assembly-CSharp}
       data:
         Preconditions: []
-        Effects: []
+        Effects:
+        - rid: 9200140611604185217
+    - rid: 9200140611604185217
+      type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
+      data:
+        _refreshDelay: 10
+        data: 
+        functionality:
+          rid: 9200140611604185218
+    - rid: 9200140611604185218
+      type: {class: BinaryBelief/Nothing, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9200140611604185220
+      type: {class: ActionWander, ns: , asm: Assembly-CSharp}
+      data:
+        Preconditions: []
+        Effects:
+        - rid: 9200140611604185221
+    - rid: 9200140611604185221
+      type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
+      data:
+        _refreshDelay: 0.5
+        data: []
+        functionality:
+          rid: 9200140611604185222
+    - rid: 9200140611604185222
+      type: {class: LocationBelief/BeliefMyLocation, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9200140611604185231
+      type: {class: GoalSit, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9200140611604185241
+      type: {class: GoalWander, ns: , asm: Assembly-CSharp}
+      data: 
 --- !u!114 &93272019
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -707,7 +716,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SerializedVersion: 0
-  m_AgentTypeID: 1479372276
+  m_AgentTypeID: 0
   m_CollectObjects: 0
   m_Size: {x: 10, y: 10, z: 10}
   m_Center: {x: 0, y: 2, z: 0}

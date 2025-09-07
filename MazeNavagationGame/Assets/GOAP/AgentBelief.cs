@@ -9,14 +9,16 @@ using Sirenix.OdinInspector;
 public interface IBelief
 {
     string Name { get; }
+    Func<bool> condition { get; set; }
+    bool refreshing { get; set; }
     float refreshDelay { get; set; }
     object boxedData { get; set; }
     float timeStamp { get; set; }
 
     void UpdateBelief(IReadOnlyList<IBelief> beliefs);
-
     void SetAgent(GoapAgent agent);
     float GetRefreshDelay();
+     bool EvaluateCondition();
 }
 
 
@@ -26,13 +28,17 @@ public class AgentBelief<T> : IBelief
     //Variables/properties
     protected GoapAgent agent;
     public string Name { get; set; }
+    public Func<bool> condition { get; set; } = () => false;
     public string key { get; }
-    [SerializeField] float _refreshDelay;
+    [SerializeField] public bool refreshing { get; set; }
+
+    [SerializeField][ShowIf("refreshing")] float _refreshDelay;
     public float refreshDelay { get => _refreshDelay; set => _refreshDelay = value; }
     public object boxedData { get => data; set => data = (T[])value; }
     public float timeStamp { get; set; }
 
     public T[] data;
+    public T[] GetData() => data;
 
     //Methods
     public virtual void SetAgent(GoapAgent agent) => this.agent = agent;
@@ -40,6 +46,7 @@ public class AgentBelief<T> : IBelief
     protected AgentBelief() { }
     protected AgentBelief(string name) => Name = name;
 
+    public bool EvaluateCondition() => condition();
 
 
 

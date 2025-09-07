@@ -12,8 +12,8 @@ public class AgentAction
     public virtual string Name { get; set; }
     [ShowInInspector] public virtual float Cost { get; private set; }
 
-    [SerializeField] public List<AgentBelief<T>> Preconditions = new List<AgentBelief<T>>();
-    [SerializeField] public List<AgentBelief<T>> Effects = new List<AgentBelief<T>>();
+    [SerializeReference] public List<IBelief> Preconditions = new List<IBelief>();
+    [SerializeReference] public List<IBelief> Effects = new List<IBelief>();
 
     IActionStrategy strategy;
     public bool Complete => strategy.Complete;

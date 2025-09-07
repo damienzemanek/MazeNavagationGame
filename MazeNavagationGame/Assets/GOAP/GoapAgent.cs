@@ -15,7 +15,7 @@ public class GoapAgent : MonoBehaviour
     public AgentAction currentAction;
 
     [SerializeReference] public List<IBelief> beliefs = new();
-    [SerializeReference] public List<AgentGoal> goals = new();
+    [SerializeReference] public List<IGoal> goals = new();
     [SerializeReference] public List<AgentAction> actions = new();
 
     private void Start()
@@ -62,7 +62,7 @@ public class GoapAgent : MonoBehaviour
     }
 
     //Gets the goal with the highest priority
-    AgentGoal ChoseGoal()
+    IGoal ChoseGoal()
     {
         int highestPriorityGoalsIndex = 0;
         int highestPriority = 0;
@@ -84,6 +84,8 @@ public class GoapAgent : MonoBehaviour
         var givenBeliefs = (IReadOnlyList<IBelief>)beliefs;
         foreach(IBelief belief in beliefs)
         {
+            if (!belief.refreshing) return;
+
             bool dueToUpdate = belief.GetRefreshDelay() <= 0f || (Time.time - belief.timeStamp) >= belief.GetRefreshDelay();
             if (dueToUpdate)
                 belief.UpdateBelief(givenBeliefs);
@@ -94,7 +96,7 @@ public class GoapAgent : MonoBehaviour
     void ActOnKnowledge()
     {
         // pick the goal with the highest priority
-        AgentGoal topGoal = null;
+        IGoal topGoal = null;
         int highest = int.MinValue;
 
         foreach (var goal in goals)
