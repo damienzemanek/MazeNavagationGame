@@ -244,12 +244,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thinking: 0
   thinkDelay: 0.1
+  currentAction:
+    Preconditions: []
+    Effects: []
   beliefs:
   - rid: 9200140611604185198
   - rid: 9200140611604185205
   goals:
   - rid: -2
   - rid: -2
+  actions:
+  - rid: 9200140611604185211
   references:
     version: 2
     RefIds:
@@ -276,6 +281,11 @@ MonoBehaviour:
     - rid: 9200140611604185206
       type: {class: BinaryBelief/BeliefAmIdling, ns: , asm: Assembly-CSharp}
       data: 
+    - rid: 9200140611604185211
+      type: {class: ActionRelax, ns: , asm: Assembly-CSharp}
+      data:
+        Preconditions: []
+        Effects: []
 --- !u!114 &93272019
 MonoBehaviour:
   m_ObjectHideFlags: 0
