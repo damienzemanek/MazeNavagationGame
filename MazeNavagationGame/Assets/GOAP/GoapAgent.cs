@@ -15,6 +15,8 @@ public class GoapAgent : MonoBehaviour
     public int thinkDelayCount = 0;
     public int thinkDelayAmountsToReEvaluate = 3;
 
+    [ShowInInspector] public AgentAction previousAction;
+
     [ShowInInspector] public IGoal currentGoal;
     [ShowInInspector] public List<IGoal> GoalQueueView => GetGoalQueueSnapshot();
     [ShowInInspector] public List<IBelief> BeliefsHashView => Beliefs.ToList();
@@ -29,8 +31,13 @@ public class GoapAgent : MonoBehaviour
     {
         Initialize();
         StartCoroutine(PriorityManage());
+        print("Started AI");
     }
 
+    private void Update()
+    {
+        if(Beliefs.Count > 0) EvaluateBeliefs();
+    }
 
 
     void Initialize()
@@ -40,6 +47,7 @@ public class GoapAgent : MonoBehaviour
         {
             goal.SetPriority(goal.initialPriority);
             goal.SetGoapAgentToDesiredEffects(this);
+            goal.SetOriginalGoalsToBeliefs();
         });
 
         CreateGoalQueue(liveGoals);
@@ -78,36 +86,42 @@ public class GoapAgent : MonoBehaviour
     void CreateBeliefHashSet(List<IGoal> liveGoals)
     {
         HashSet<IBelief> ret = new HashSet<IBelief>();
-        
+
         liveGoals
-            .Where(goal => goal?.DesiredEffects != null)
-            .SelectMany(goal => goal.DesiredEffects)
+            .Where(goal => goal != null)
+            .SelectMany(goal =>
+            {
+                List<IBelief> allBeliefs =
+                    (goal.DesiredEffects ?? Enumerable.Empty<IBelief>())
+                    .Concat((goal.RequiredActionsToAchieveGoal ?? Enumerable.Empty<AgentAction>())
+                        .Where(action => action != null)
+                        .SelectMany(action =>
+                            (action.Preconditions ?? Enumerable.Empty<IBelief>())
+                            .Concat(action.Effects ?? Enumerable.Empty<IBelief>())
+                        ))
+                    .Where(belief => belief != null)
+                    .Distinct()
+                    .ToList();
+                return allBeliefs;
+            })
             .ToList() 
             .ForEach(belief => 
             {
+
                 //print($"Checking belief {belief.GetBelief().ToString()}");
                 if (!seen.Contains(belief.type)) seen.Add(belief.type);
                 else return;
 
-                var copy = belief.CreateCopy(belief);
+                IBelief copy = belief.CreateCopy(belief);
                 copy.refreshing = true;
+                copy.SetAgent(this);
+                copy.BeliefChangedCallback += CallbackBeliefActionUse;
 
                 ret.Add(copy);
             });
 
         Beliefs = ret;
         print($"finished creating belief hash, count:[{Beliefs.Count}]");
-    }
-
-    bool TryDequeueTop(out IGoal top)
-    {
-        if (GoalPriorityQueue.Count == 0) { top = null; return false; }
-        if (GoalPriorityQueue.TryFirst(out IGoal first))
-            if (!first.AllRequiedActionsPreConditionsSatisfied())
-                { top = null; return false; }
-
-        top = GoalPriorityQueue.Dequeue();
-        return true;
     }
 
 
@@ -118,14 +132,13 @@ public class GoapAgent : MonoBehaviour
         {
             yield return new WaitForSeconds(thinkDelay);
             thinkDelayCount++;
-            print(thinkDelayCount);
-
-            EvaluateBeliefs();
+            print("Thinking");
             IGoal goal = ChoseGoal();
             CreateGoalQueue(goals);
-            UseTopAction(out currentAction);
-            if (CheckIfCurrentActionsEffectsAreSatisfied()) UseTopAction(out currentAction);
-
+            if (CheckIfPreconditionsAreSatisifed())
+                UseTopAction(out currentAction, goal);
+            else
+                UsePreviousAction();
             if (thinkDelayCount > thinkDelayAmountsToReEvaluate)
             { GenerateActionPlan(goal, Beliefs); thinkDelayCount = 0; }
         }
@@ -155,35 +168,53 @@ public class GoapAgent : MonoBehaviour
     //Alters goal's priorities based on beliefs
     void EvaluateBeliefs()
     {
-       
         foreach (IBelief belief in Beliefs)
         {
             if (!belief.refreshing) return;
-
             bool dueToUpdate = belief.GetRefreshDelay() <= 0f || (Time.time - belief.timeStamp) >= belief.GetRefreshDelay();
             if (dueToUpdate)
+            {
+                print($"Updating Belief {belief.type}");
                 belief.UpdateBelief((IReadOnlyList<IBelief>)Beliefs.ToList());
+            }
         }
 
     }
 
-    //If so move to next action in the queue
-    bool CheckIfCurrentActionsEffectsAreSatisfied()
+    //If NOT go to previous action :)
+    bool CheckIfPreconditionsAreSatisifed()
     {
-        var effects = currentAction?.Effects;
-        if (effects == null) return true;
+        bool ret = false;
+        var effects = currentAction?.Preconditions;
+        if (effects == null) ret = true;
+        ret = effects.All(effect => effect != null && effect.condition == true);
+        print("Thinking : Check if current actions preconditions are satisfied" + ret);
+        return ret;
+    }
 
-        return effects.All(effect => effect != null && (effect.condition?.Invoke() ?? false));
+    void CallbackBeliefActionUse(IGoal origGoal)
+    {
+        print("Callback from belief to action being done");
+        if (origGoal != currentGoal) return;
+        UseTopAction(out AgentAction top, currentGoal);
     }
 
     //Attempt to do the top action
-    bool UseTopAction(out AgentAction top)
+    bool UseTopAction(out AgentAction top, IGoal checkGoal)
     {
         if (currentActionPlan.ActionPriorityQueue.Count == 0) { top = null; return false; }
         top = currentActionPlan.ActionPriorityQueue.Dequeue();
         top.Start();
         print($"ActionPlan -> Doing top action {top}");
+        previousAction = top;
         return true;
+    }
+
+    void UsePreviousAction()
+    {
+        if (previousAction == null) return;
+        previousAction.Start();
+        print($"ActionPlan -> Doing previous top action {previousAction}");
     }
 
     void GenerateActionPlan(IGoal chosenGoal, HashSet<IBelief> beliefs)

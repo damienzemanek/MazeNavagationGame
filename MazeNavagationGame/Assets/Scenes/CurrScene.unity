@@ -176,12 +176,12 @@ MonoBehaviour:
   thinkDelayAmountsToReEvaluate: 3
   currentAction:
     Preconditions: []
-    Effects: []
+    Effects:
+    - rid: 9200140633805422738
     functionality:
       rid: -2
   goals:
   - rid: 9200140611604185256
-  - rid: 9200140611604185468
   - rid: 9200140633805422724
   references:
     version: 2
@@ -205,34 +205,6 @@ MonoBehaviour:
     - rid: 9200140611604185263
       type: {class: BinaryBelief/BeliefAmIdling, ns: , asm: Assembly-CSharp}
       data: 
-    - rid: 9200140611604185468
-      type: {class: GoalWander, ns: , asm: Assembly-CSharp}
-      data:
-        _initialPriority: 2
-        _DesiredEffects:
-        - rid: 9200140611604185469
-        - rid: 9200140611604185484
-        _RequiredActionsToAchieveGoal:
-        - rid: 9200140633805422699
-    - rid: 9200140611604185469
-      type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
-      data:
-        data: 00
-        functionality:
-          rid: 9200140611604185470
-    - rid: 9200140611604185470
-      type: {class: BinaryBelief/BeliefAmIdling, ns: , asm: Assembly-CSharp}
-      data: 
-    - rid: 9200140611604185484
-      type: {class: LocationBelief, ns: , asm: Assembly-CSharp}
-      data:
-        data:
-        - {x: 0, y: 0, z: 0}
-        functionality:
-          rid: 9200140611604185485
-    - rid: 9200140611604185485
-      type: {class: LocationBelief/BeliefMyLocation, ns: , asm: Assembly-CSharp}
-      data: 
     - rid: 9200140633805422697
       type: {class: AgentAction, ns: , asm: Assembly-CSharp}
       data:
@@ -240,27 +212,16 @@ MonoBehaviour:
         Effects: []
         functionality:
           rid: 9200140633805422702
-    - rid: 9200140633805422699
-      type: {class: AgentAction, ns: , asm: Assembly-CSharp}
-      data:
-        Preconditions: []
-        Effects: []
-        functionality:
-          rid: 9200140633805422709
     - rid: 9200140633805422702
       type: {class: IdleActionFunctionality, ns: , asm: Assembly-CSharp}
       data: 
-    - rid: 9200140633805422709
-      type: {class: WanderActionFunctionality, ns: , asm: Assembly-CSharp}
-      data:
-        agent: {fileID: 93272020}
-        wanderRadius: 15
     - rid: 9200140633805422724
       type: {class: GoalAttack, ns: , asm: Assembly-CSharp}
       data:
         _initialPriority: 4
         _DesiredEffects: []
         _RequiredActionsToAchieveGoal:
+        - rid: 9200140633805422734
         - rid: 9200140633805422725
     - rid: 9200140633805422725
       type: {class: AgentAction, ns: , asm: Assembly-CSharp}
@@ -278,10 +239,31 @@ MonoBehaviour:
     - rid: 9200140633805422731
       type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
       data:
-        data: 00
+        data: 01
         functionality:
           rid: 9200140633805422732
     - rid: 9200140633805422732
+      type: {class: BinaryBelief/BeliefCanSeePlayer, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9200140633805422734
+      type: {class: AgentAction, ns: , asm: Assembly-CSharp}
+      data:
+        Preconditions: []
+        Effects: []
+        functionality:
+          rid: 9200140633805422735
+    - rid: 9200140633805422735
+      type: {class: WanderActionFunctionality, ns: , asm: Assembly-CSharp}
+      data:
+        agent: {fileID: 93272020}
+        wanderRadius: 4
+    - rid: 9200140633805422738
+      type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
+      data:
+        data: 00
+        functionality:
+          rid: 9200140633805422744
+    - rid: 9200140633805422744
       type: {class: BinaryBelief/BeliefCanSeePlayer, ns: , asm: Assembly-CSharp}
       data: 
 --- !u!114 &93272019

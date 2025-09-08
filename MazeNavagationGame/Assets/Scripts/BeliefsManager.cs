@@ -161,9 +161,11 @@ public class BinaryBelief : AgentBelief<bool>
 
             if (agent.GetComponent<Sensor>().inRange.current == true)
                 ret = true;
+            else
+                ret = false;
 
             buffer[0] = ret;
-            Debug.Log($"Checking Can See Player? {buffer[0]}");
+            Debug.Log($"Updating Checking Can See Player? {buffer[0]}");
 
             return buffer;
         }

@@ -15,7 +15,7 @@ public interface IGoal
     int SetPriority(int amount);
     void SetGoapAgentToDesiredEffects(GoapAgent agent);
 
-    bool AllRequiedActionsPreConditionsSatisfied();
+    void SetOriginalGoalsToBeliefs();
 }
 
 
@@ -46,17 +46,19 @@ public class AgentGoal : IGoal
     }
     public int SetPriority(int amount) => currentPriority = amount;
 
-
-    public bool AllRequiedActionsPreConditionsSatisfied()
+    public void SetOriginalGoalsToBeliefs()
     {
-        if (RequiredActionsToAchieveGoal == null) return true;
-
-        return RequiredActionsToAchieveGoal
-            .Where(action => action != null)
-            .SelectMany(action => action.Preconditions ?? Enumerable.Empty<IBelief>())
-            .All(precond => precond != null && precond.EvaluateCondition() == true);
-          
+        foreach (IBelief belief in _DesiredEffects)
+            belief.originalGoal = this;
+        foreach(AgentAction action in _RequiredActionsToAchieveGoal)
+        {
+            foreach (IBelief belief in action.Preconditions)
+                belief.originalGoal = this;
+            foreach (IBelief belief in action.Effects)
+                belief.originalGoal = this;
+        }
     }
+
 
     public AgentGoal() { }
 }
