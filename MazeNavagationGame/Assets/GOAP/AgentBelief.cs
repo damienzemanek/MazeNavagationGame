@@ -25,8 +25,6 @@ public interface IBelief
     IBelief CreateCopy(IBelief copy);
     Beliefs GetBelief();
     Action<IGoal> BeliefChangedCallback { get; set; }
-    bool CheckIfBeliefIsRequiredEffectToAchieveCURRENTGoal(IGoal goal);
-
 }
 
 
@@ -54,9 +52,7 @@ public class AgentBelief<T> : IBelief
     public object boxedData { get => data; set => data = (T[])value; }
     public float timeStamp { get; set; }
 
-    public T[] data;
-    public T[] GetData() => data;
-
+    public virtual T[] data { get; set; }
     [ShowInInspector] public IGoal originalGoal { get; set; }
 
     //Methods
@@ -68,26 +64,14 @@ public class AgentBelief<T> : IBelief
     public virtual IBelief CreateCopy(IBelief copy)
     {
         if (copy == null) return null;
-
         var clone = SerializationUtility.CreateCopy(copy);
+        //data = new T[data.Length];
 
         return (IBelief)clone;
    
     }
 
-    //Generic UpdateBelief
-    public virtual T[] UpdateBelief(List<AgentBelief<T>> beliefs)
-    {
-        //Debug.Log("thinking updating belif");
-        if (agent.currentGoal != null)
-            if (CheckIfBeliefIsRequiredEffectToAchieveCURRENTGoal(agent.currentGoal))
-            {
-                Debug.Log("thinking updating belif change callback");
-                BeliefChangedCallback?.Invoke(originalGoal);
-
-            }
-        return data;
-    }
+    public virtual void UpdateBelief(List<AgentBelief<T>> beliefs) { }
 
     //Interface UpdateBelief -> Generic
     public void UpdateBelief(IReadOnlyList<IBelief> beliefs)
@@ -95,49 +79,21 @@ public class AgentBelief<T> : IBelief
         buffer.Clear();
 
         foreach (var b in beliefs)
-            if (b is AgentBelief<T> beliefTyped)
+            if (b is AgentBelief<T> beliefTyped && b.type == type)
             {
                 Debug.Log("precon updating precons");
-                SatisfyAPrecondition(agent.currentGoal, b);
-                foreach (IGoal goal in agent.GoalPriorityQueue)
-                    SatisfyAPrecondition(goal, b);
-
+                SatisfyAPrecondition(b);
                 buffer.Add(item: beliefTyped);
             }
 
 
-        data = UpdateBelief(buffer);
+        UpdateBelief(buffer);
         timeStamp = Time.time;
     }
-    public virtual bool CheckIfBeliefIsRequiredEffectToAchieveCURRENTGoal(IGoal goal)
+
+    public virtual void SatisfyAPrecondition(IBelief givenBelief)
     {
-        if(goal == null) return false;
-        
-
-
-    
-
-        return true;
-
-    }
-
-    public void SatisfyAPrecondition(IGoal goal, IBelief givenBelief)
-    {
-        Debug.Log($"precon attempting to satify precon {goal.type} : {givenBelief.type}");
-        var match =
-            (goal.RequiredActionsToAchieveGoal ?? Enumerable.Empty<AgentAction>())
-            .SelectMany(a => a?.Preconditions ?? Enumerable.Empty<IBelief>())
-            .FirstOrDefault(b => b != null && b.type == givenBelief.type);
-
-        if (match == null)
-        {
-            Debug.LogWarning($"No precondition of type {givenBelief.type} found for goal '{goal}'.");
-            return;
-        }
-        if(givenBelief == match)
-            match.satisfied = true;
-
-        if (match.satisfied == true) Debug.Log($"precon SATISIFUIED++++ {match}");
+        agent.SatisfyPrecondition(givenBelief);
     }
 
     public Action<IGoal> BeliefChangedCallback { get; set; }

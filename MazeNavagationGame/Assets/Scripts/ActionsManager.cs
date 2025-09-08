@@ -38,13 +38,13 @@ public class WanderActionFunctionality : IActionFunctionality
 
     public void Start()
     {
-        Debug.Log("ActionPlan -> Starting Wander");
+        //Debug.Log("ActionPlan -> Starting Wander");
         if (!agent.isOnNavMesh)
         {
             if (NavMesh.SamplePosition(agent.transform.position, out var initHit, 5f, NavMesh.AllAreas))
                 agent.Warp(newPosition: initHit.position);
         }
-        Debug.Log($"AI -> Agent: [{agent.gameObject.name}] is on nav mesh: [{agent.isOnNavMesh}]");
+        //Debug.Log($"AI -> Agent: [{agent.gameObject.name}] is on nav mesh: [{agent.isOnNavMesh}]");
 
         for (int i = 0; i < 5; i++)
         {

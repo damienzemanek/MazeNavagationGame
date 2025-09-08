@@ -8,7 +8,9 @@ using static BinaryBelief;
 
 public interface ISensor<GoapAgent, T>
 {
-    public abstract T[] Do(GoapAgent agent, T[] data);
+    T[] Do(GoapAgent agent);
+
+    T[] data { get; set; }
 
 }
 
@@ -52,7 +54,7 @@ public class LocationBelief : AgentBelief<Vector3>
 {
     [SerializeReference] public ISensor<GoapAgent, Vector3> functionality;
 
-    public Vector3[] Location => data;
+    [ShowInInspector] public Vector3[] Location => data;
     [ShowInInspector] public override Beliefs type
     {
         get
@@ -65,23 +67,22 @@ public class LocationBelief : AgentBelief<Vector3>
     }
     public LocationBelief() { data = new Vector3[1]; }
 
-    public override Vector3[] UpdateBelief(List<AgentBelief<Vector3>> beliefs)
+    public override void UpdateBelief(List<AgentBelief<Vector3>> beliefs)
     {
         base.UpdateBelief(beliefs);
-        data = functionality.Do(agent, data);
-        return Location;
+        data = functionality.Do(agent);
     }
 
     [Serializable]
     public class BeliefMyLocation : ISensor<GoapAgent, Vector3>
     {
-        private readonly Vector3[] buffer = new Vector3[1];
+        public Vector3[] data { get; set; } = new Vector3[1];
 
-        public Vector3[] Do(GoapAgent agent, Vector3[] data) => SetMyLocation(agent, data);
-        Vector3[] SetMyLocation(GoapAgent agent, Vector3[] data)
+        public Vector3[] Do(GoapAgent agent) => SetMyLocation(agent);
+        Vector3[] SetMyLocation(GoapAgent agent)
         {
-            buffer[0] = agent.transform.position;
-            return buffer;
+            data[0] = agent.transform.position;
+            return data;
         }
     }
 
@@ -92,7 +93,7 @@ public class BinaryBelief : AgentBelief<bool>
 {
     [SerializeReference] public ISensor<GoapAgent, bool> functionality;
 
-    public bool[] Is => data;
+    [ShowInInspector] public bool[] Is => functionality.data;
     [ShowInInspector] public override Beliefs type
     {
         get
@@ -107,67 +108,72 @@ public class BinaryBelief : AgentBelief<bool>
             return Beliefs.NoBeliefFound;
         }
     }
+    public override void SatisfyAPrecondition(IBelief givenBelief)
+    {
+        Debug.Log($"PreCheck Binary Belief for {type} : {Is[0]}");
+        if (Is[0])
+            base.SatisfyAPrecondition(givenBelief);
+    }
 
     public BinaryBelief() { data = new bool[1]; }
-    public override bool[] UpdateBelief(List<AgentBelief<bool>> beliefs)
+    public override void UpdateBelief(List<AgentBelief<bool>> beliefs)
     {
         base.UpdateBelief(beliefs);
-        data = functionality.Do(agent, data);
-        return Is;
+        data = functionality.Do(agent);
     }
 
     [Serializable]
     public class Nothing : ISensor<GoapAgent, bool>
     {
-        private readonly bool[] buffer = new bool[1];
+        public bool[] data { get; set; } = new bool[1];
 
-        public bool[] Do(GoapAgent agent, bool[] data) => DoNothing(agent, data);
-        bool[] DoNothing(GoapAgent agent, bool[] data)
+        public bool[] Do(GoapAgent agent) => DoNothing(agent);
+        bool[] DoNothing(GoapAgent agent)
         {
-            buffer[0] = true;
-            return buffer;
+            data[0] = true;
+            return data;
         }
     }
 
     [Serializable]
     public class BeliefAmIdling : ISensor<GoapAgent, bool>
     {
-        private readonly bool[] buffer = new bool[1];
+        public bool[] data { get; set; } = new bool[1];
 
-        public bool[] Do(GoapAgent agent, bool[] data) => IsIdling(agent, data);
-        bool[] IsIdling(GoapAgent agent, bool[] data)
+        public bool[] Do(GoapAgent agent) => IsIdling(agent);
+        bool[] IsIdling(GoapAgent agent)
         {
             bool ret = true;
 
             if (agent.GetComponent<NavMeshAgent>().velocity.magnitude > 0.01f)
                 ret = false;
 
-            buffer[0] = ret;
+            data[0] = ret;
             //Debug.Log($"Checking Idle {buffer[0]}");
 
-            return buffer;
+            return data;
         }
     }
 
     [Serializable]
     public class BeliefCanSeePlayer : ISensor<GoapAgent, bool>
     {
-        private readonly bool[] buffer = new bool[1];
+        public bool[] data { get; set; } = new bool[1];
 
-        public bool[] Do(GoapAgent agent, bool[] data) => CanSeePlayer(agent, data);
-        bool[] CanSeePlayer(GoapAgent agent, bool[] data)
+        public bool[] Do(GoapAgent agent) => CanSeePlayer(agent);
+        bool[] CanSeePlayer(GoapAgent agent)
         {
-            bool ret = true;
+            bool ret = false;
 
             if (agent.GetComponent<Sensor>().inRange.current == true)
                 ret = true;
             else
                 ret = false;
 
-            buffer[0] = ret;
-            Debug.Log($"Thinking Checking Can See Player? {buffer[0]}");
+            data[0] = ret;
+            Debug.Log($"Thinking Checking Can See Player? {data[0]}");
 
-            return buffer;
+            return data;
         }
     }
 

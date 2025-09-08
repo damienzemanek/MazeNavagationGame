@@ -39,6 +39,38 @@ public class AgentAction
         return true;
     }
 
+    public void SatisfyPrecondition(IBelief belief)
+    {
+        Debug.Log("satisfied? : Action trying to satisfy cond " +  belief.type);
+        foreach (var precon in Preconditions)
+        {
+            if (precon == null) continue;
+            if (precon.type != belief.type) continue;
+
+            if (BoxedDataEqual(precon.boxedData, belief.boxedData)) 
+                precon.satisfied = true;
+
+            Debug.Log(message: $"Precon {precon.type} satisfied? : {precon.satisfied}");
+
+        }
+    }
+
+
+   //Ai gen compare for the boxed data
+    static bool BoxedDataEqual(object a, object b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null) return false;
+        if (a.GetType() != b.GetType()) return false;
+
+        // If both are arrays, compare element-by-element
+        if (a is System.Array aa && b is System.Array bb)
+            return aa.Length == bb.Length
+                && aa.Cast<object>().SequenceEqual(bb.Cast<object>());
+
+        // Fallback: normal equality
+        return Equals(a, b);
+    }
 }
 
 

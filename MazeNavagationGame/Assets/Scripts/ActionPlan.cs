@@ -12,7 +12,6 @@ public class ActionPlan
 {
     bool initComplete;
     public IGoal Goal { get; }
-
     [ShowInInspector] public List<AgentAction> ActionPlanView => GetActionQueueSnapshot();
 
     [ShowInInspector] public SimplePriorityQueue<AgentAction, int> ActionPriorityQueue = new();
@@ -37,7 +36,7 @@ public class ActionPlan
 
 
     //AI gen function so i can see the queue in inspector
-    private List<AgentAction> GetActionQueueSnapshot()
+    public List<AgentAction> GetActionQueueSnapshot()
     {
         if (!initComplete) return null;
         // If you enqueued with NEGATED priorities (max-first), keep OrderBy(...)

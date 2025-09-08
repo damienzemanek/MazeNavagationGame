@@ -42,7 +42,7 @@ public class GoapAgent : MonoBehaviour
 
     private void Update()
     {
-        if (Beliefs.Count > 0) EvaluateBeliefs();
+        if (Beliefs.Count > 0 && currentActionPlan != null) EvaluateBeliefs();
     }
 
 
@@ -58,7 +58,6 @@ public class GoapAgent : MonoBehaviour
 
         CreateGoalQueue(liveGoals);
         CreateBeliefHashSet(liveGoals);
-        EvaluateBeliefs();
         IGoal goal = ChoseGoal();
         GenerateActionPlan(goal, Beliefs);
 
@@ -178,6 +177,7 @@ public class GoapAgent : MonoBehaviour
     {
         print($"thinking checking if current action complete : {currentAction.functionality.GetType()} : {currentAction.Complete}");
         if (!currentAction.Complete) return;
+        if (!currentActionPlan.ActionPriorityQueue.First.PreConditionsSatisfied) return;
         currentAction = null;
         //currentActionPlan.ActionPriorityQueue.Dequeue();
     }
@@ -205,26 +205,7 @@ public class GoapAgent : MonoBehaviour
         bool ret = false;
         if (currentAction == null || currentAction.functionality == null) return true; //new Action check
 
-        var preCons = currentAction.Preconditions;
-
-        var Type = Beliefs
-            .Where(b => b != null)
-            .GroupBy(b => b.type)
-            .ToDictionary(g => g.Key, g => g.First());
-
-        foreach(var requirement in preCons)
-        {
-            if (!Type.TryGetValue(requirement.type, out var runtime))
-                ret = true; //No Preconditions needed
-            print($"thinking runtime cond {runtime.boxedData} : requiremnt cond {requirement.boxedData}");
-
-            if (requirement == null) continue;
-
-            if (runtime.boxedData == requirement.boxedData) requirement.satisfied = true;
-
-            if (requirement.satisfied != true) return false;
-        }
-
+        if (currentAction.PreConditionsSatisfied) ret = true;
 
         print($"thinking -> Conditions Satisifed? {ret}");
         return ret;
@@ -274,5 +255,13 @@ public class GoapAgent : MonoBehaviour
         ActionPlan newActionPlan = new ActionPlan(chosenGoal, beliefs);
         currentActionPlan = newActionPlan;
         print("Generated new ActionPlan");
+    }
+
+    public void SatisfyPrecondition(IBelief satsifyBelief)
+    {
+        print("satisfied? : goap agent trying to satisfy cond " + satsifyBelief.type);
+        foreach(AgentAction action in currentActionPlan.GetActionQueueSnapshot())
+            action.SatisfyPrecondition(satsifyBelief);
+
     }
 }
