@@ -20,7 +20,7 @@ public class IdleActionFunctionality : IActionFunctionality
     public bool Complete { get; private set; }
     public IdleActionFunctionality() { }
 
-    public void Start() => Complete = false;
+    public bool CanStartThenStart() => Complete = false;
     public void Update(float deltaTime) { }
 
     public void CompleteAction() => Complete = true;
@@ -39,7 +39,7 @@ public class WanderActionFunctionality : IActionFunctionality
     [ShowInInspector] public bool Complete { get => complt; private set => complt = value; }
     public WanderActionFunctionality() { }
 
-    public void Start()
+    public bool CanStartThenStart()
     {
         //Debug.Log("ActionPlan -> Starting Wander");
         if (!agent.isOnNavMesh)
@@ -60,10 +60,12 @@ public class WanderActionFunctionality : IActionFunctionality
             {
                 agent.SetDestination(hit.position);
                 Debug.Log("AI -> Setting agent position");
-                return;
+                return true;
             }
 
         }
+
+        return true;
     }
 
     public void Update(float deltaTime) { }
@@ -82,8 +84,10 @@ public class FollowActionFunctionality : IActionFunctionality
     public bool Complete { get ; private set; }
     public FollowActionFunctionality() { }
 
-    public void Start()
+    public bool CanStartThenStart()
     {
+        if (!viewRadiusSensor.inRange.current) return false;
+
         Debug.Log("ActionPlan -> Attempting Follow");
         if (!agent.isOnNavMesh)
         {
@@ -91,6 +95,7 @@ public class FollowActionFunctionality : IActionFunctionality
                 agent.Warp(newPosition: initHit.position);
         }
         Complete = false;
+        return true;
     }
 
     public void Update(float delatTime)
@@ -120,10 +125,11 @@ public class AttackActionFunctionality : IActionFunctionality
     public bool Complete { get; private set; }
     public AttackActionFunctionality() { }
 
-    public void Start()
+    public bool CanStartThenStart()
     {
         Debug.Log("ActionPlan -> Attempting Follow");
-        if (!sensor.inRange.current) return;
+        if (!sensor.inRange.current) return false;
+        return true;
     }
 
     public void Update(float delatTime)

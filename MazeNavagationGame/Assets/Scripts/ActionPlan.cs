@@ -1,50 +1,64 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
-using Priority_Queue;
 using Sirenix.OdinInspector;
-using UnityEngine;
-using static NPC;
 
 [Serializable]
-public class ActionPlan 
+public class ActionPlan
 {
     bool initComplete;
     public IGoal Goal { get; }
-    [ShowInInspector] public List<AgentAction> ActionPlanView => GetActionQueueSnapshot();
+    public NodeAction Head { get; private set; }
+    public NodeAction Tail { get; private set; }
+    public NodeAction Current { get; private set; }
 
-    [ShowInInspector] public SimplePriorityQueue<AgentAction, int> ActionPriorityQueue = new();
-    public float totalCost { get; set; }
-
+    [ShowInInspector] public List<NodeAction> Nodes = new();
     public ActionPlan(IGoal goal, HashSet<IBelief> beliefs)
     {
         Goal = goal;
-        GenerateActions(goal);
+        BuildChain(goal);
         initComplete = true;
     }
 
-    void GenerateActions(IGoal goal)
+    void BuildChain(IGoal goal)
     {
+        NodeAction prev = null;
         foreach (AgentAction action in goal.RequiredActionsToAchieveGoal)
         {
-            ActionPriorityQueue.Enqueue(action, ActionPriorityQueue.Count + 1);
+            if (action == null) continue;
+            var n = new NodeAction(action);
+            if (Head == null) Head = n;
+            if (prev != null) { prev.next = n; n.prev = prev; }
+            Nodes.Add(n);
+
+            prev = n;
         }
-
-        //Debug.Log($"Action Plan Count: [{ActionPriorityQueue.Count}]");
+        Tail = prev;
     }
 
-
-    //AI gen function so i can see the queue in inspector
-    public List<AgentAction> GetActionQueueSnapshot()
+    public bool MoveNext()
     {
-        if (!initComplete) return null;
-        // If you enqueued with NEGATED priorities (max-first), keep OrderBy(...)
-        return ActionPriorityQueue
-            .Select(a => new { A = a, P = ActionPriorityQueue.GetPriority(a) })
-            .OrderBy(x => x.P)          // most negative (i.e., highest real priority) first
-            .Select(x => x.A)
-            .ToList();
+        if (Current?.next == null) return false;
+        Current = Current.next;
+        return true;
     }
+
+    public bool MovePrev()
+    {
+        if (Current?.prev == null) return false;
+        Current = Current.prev;
+        return true;
+    }
+
 
 }
+
+
+public class NodeAction
+{
+    public readonly AgentAction action;
+    [DisplayAsString] public NodeAction prev, next;
+
+    public NodeAction(AgentAction action) => this.action = action;
+
+}
+

@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using System.Linq;
 using Sirenix.OdinInspector;
-using Unity.VisualScripting;
 using Sirenix.Serialization;
+using UnityEngine;
 
 
 //Interface for ODIN Serialization for inspector visual
@@ -40,7 +38,8 @@ public class AgentBelief<T> : IBelief
 
     [SerializeField] bool _refreshing;
     public bool refreshing { get => _refreshing; set => _refreshing = value; }
-    [ShowInInspector] public float refreshDelay
+    [ShowInInspector]
+    public float refreshDelay
     {
         get
         {
@@ -68,7 +67,7 @@ public class AgentBelief<T> : IBelief
         //data = new T[data.Length];
 
         return (IBelief)clone;
-   
+
     }
 
     public virtual void UpdateBelief(List<AgentBelief<T>> beliefs) { }
@@ -77,6 +76,8 @@ public class AgentBelief<T> : IBelief
     public void UpdateBelief(IReadOnlyList<IBelief> beliefs)
     {
         buffer.Clear();
+
+        if (agent.node == null) Debug.LogError("No Node found on Agent");
 
         foreach (var b in beliefs)
             if (b is AgentBelief<T> beliefTyped && b.type == type)
@@ -109,14 +110,14 @@ public class AgentBelief<T> : IBelief
     public bool Equals(AgentBelief<T> compare)
     {
         if (compare == null) return false;
-        if(ReferenceEquals(this, compare)) return true;
+        if (ReferenceEquals(this, compare)) return true;
 
         if (data == null || compare.data == null) return data == compare.data;
 
-        if(data.Length != compare.data.Length) return false;
+        if (data.Length != compare.data.Length) return false;
 
         var comparison = EqualityComparer<T>.Default;
-        for(int i = 0; i < data.Length; i++)
+        for (int i = 0; i < data.Length; i++)
             if (!comparison.Equals(data[i], compare.data[i])) return false;
 
         return true;

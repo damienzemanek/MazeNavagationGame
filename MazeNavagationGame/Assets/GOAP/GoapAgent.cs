@@ -1,38 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using NUnit.Framework;
-using Unity.VisualScripting;
-using UnityEngine;
-using System.Net;
-using static NPC;
 using Priority_Queue;
 using Sirenix.OdinInspector;
-using UnityEngine.Rendering;
-using System;
+using Sirenix.Serialization;
+using UnityEngine;
 
 public class GoapAgent : MonoBehaviour
 {
     public float thinkDelay = 3f;
     public int thinkDelayCount = 0;
+    public int resetActionQueueCount = 0;
+    public int resetActionQueueCountsToReEvaluate = 5;
     public int thinkDelayAmountsToReEvaluate = 3;
-
-    [ShowInInspector] public List<AgentAction> previousActions;
 
     [ShowInInspector] public IGoal currentGoal;
     [ShowInInspector] public List<IGoal> GoalQueueView => GetGoalQueueSnapshot();
     [ShowInInspector] public List<IBelief> BeliefsHashView => Beliefs.ToList();
 
     public SimplePriorityQueue<IGoal, int> GoalPriorityQueue = new();
-    [BoxGroup("Action Plan")] public AgentAction currentAction;
+    [BoxGroup("Action Plan")][ShowInInspector] public NodeAction node;
     [BoxGroup("Action Plan")][ShowInInspector] public ActionPlan currentActionPlan;
+    ActionPlan initialActionPlan;
+
 
     public HashSet<IBelief> Beliefs = new HashSet<IBelief>();
     [SerializeReference] public List<IGoal> goals = new();
 
     private void Start()
     {
-        currentAction = null;
+        node = null;
         currentGoal = null;
         currentActionPlan = null;
 
@@ -46,9 +43,9 @@ public class GoapAgent : MonoBehaviour
     {
         if (Beliefs.Count > 0 && currentActionPlan != null) EvaluateBeliefs();
 
-        if(currentAction != null)
+        if (node != null)
         {
-            currentAction.Update(Time.deltaTime);
+            node.action.Update(Time.deltaTime);
         }
     }
 
@@ -65,10 +62,13 @@ public class GoapAgent : MonoBehaviour
 
         CreateGoalQueue(liveGoals);
         CreateBeliefHashSet(liveGoals);
+        GenerateActionPlan();
+    }
+
+    void GenerateActionPlan()
+    {
         IGoal goal = ChoseGoal();
         GenerateActionPlan(goal, Beliefs);
-
-        //print("Goap Agent finished Initializing");
     }
 
     //AI gen function so i can see the queue in inspector
@@ -128,7 +128,6 @@ public class GoapAgent : MonoBehaviour
                 copy.refreshing = true;
                 copy.satisfied = true;
                 copy.SetAgent(this);
-                copy.BeliefChangedCallback += CallbackBeliefActionUse;
 
                 ret.Add(copy);
             });
@@ -146,24 +145,43 @@ public class GoapAgent : MonoBehaviour
             yield return new WaitForSeconds(thinkDelay);
             thinkDelayCount++;
             print("Thinking");
+
+            //chose goal
             IGoal goal = ChoseGoal();
             CreateGoalQueue(goals);
 
-            if (currentAction.functionality == null)
-                UseTopAction(out currentAction, goal);
+
+            //rebuild plan periodiclly (may delete later)
+            if (thinkDelayCount > thinkDelayAmountsToReEvaluate || node == null)
+            {
+                GenerateActionPlan(goal, Beliefs);
+                thinkDelayCount = 0;
+            }
+
+
+            if (node.action.functionality == null)
+                UseCurrAction(out node, goal);
 
             if (!CheckIfEffectsAreSatisfied())
-                currentAction.Start();
+            {
+                if (node.action.CanStartThenStart() == false)
+                    resetActionQueueCount++;
+            }
             else if (AttemptToMoveToNextAction() == false)
-                currentAction.Start();
+            {
+                if (node.action.CanStartThenStart() == false)
+                    resetActionQueueCount++;
+            }
             else
                 Debug.Log("Moving to next aciton");
 
-            if (thinkDelayCount > thinkDelayAmountsToReEvaluate)
-            { 
-                GenerateActionPlan(goal, Beliefs);
-                currentAction = previousActions[0];
-                thinkDelayCount = 0;
+
+
+            if (resetActionQueueCount > resetActionQueueCountsToReEvaluate)
+            {
+                resetActionQueueCount = 0;
+                GoBackToInitialActionPlan();
+                node.action.functionality = null;
             }
         }
     }
@@ -189,13 +207,23 @@ public class GoapAgent : MonoBehaviour
         return goals[highestPriorityGoalsIndex];
     }
 
+    //Ai gen help
     bool AttemptToMoveToNextAction()
     {
-        print($"Attempting to move to next action : {currentAction.functionality.GetType()} : {currentAction.Complete}");
-        if (!currentAction.Complete) return false;
-        UseTopAction(out currentAction, ChoseGoal());
-        print($"Move complete: {currentAction.functionality.GetType()} : {currentAction.Complete}");
-        return true;
+        if (node == null || node.action == null || !node.action.Complete) return false;
+
+        if (!currentActionPlan.MoveNext()) return false; //Atempts a walk forward
+        node = currentActionPlan.Current; //if succesfful set the new current node as the next
+
+        if (node.action.CanStartThenStart()) return true; //if can start, movefwd else walk back
+
+        while (currentActionPlan.MovePrev())
+        {
+            node = currentActionPlan.Current;
+            if (node.action.CanStartThenStart()) return true;
+        }
+
+        return false;
     }
 
     //Alters goal's priorities based on beliefs
@@ -203,7 +231,7 @@ public class GoapAgent : MonoBehaviour
     {
         foreach (IBelief belief in Beliefs)
         {
-            if (!belief.refreshing) return;
+            if (!belief.refreshing) continue;
             bool dueToUpdate = belief.GetRefreshDelay() <= 0f || (Time.time - belief.timeStamp) >= belief.GetRefreshDelay();
             if (dueToUpdate)
             {
@@ -217,76 +245,90 @@ public class GoapAgent : MonoBehaviour
     //If NOT go to previous action :)
     bool CheckIfEffectsAreSatisfied()
     {
-        print("thinking checking effects");
+        //print("thinking checking effects");
         bool ret = false;
-        if (currentAction == null || currentAction.functionality == null) return true; //new Action check
+        if (node == null || node.action == null || node.action.functionality == null)
+            ret = false;
 
-        if (currentAction.EffectsSatisfied) ret = true;
-
-        print($"thinking -> Effects Satisifed? {ret}");
+        if (node.action.EffectsSatisfied) ret = true;
         return ret;
 
     }
 
-    void CallbackBeliefActionUse(IGoal origGoal)
-    {
-        print("Callback from belief to action being done");
-        if (origGoal != currentGoal) return;
-        UseTopAction(out AgentAction top, currentGoal);
-    }
-
     //Attempt to do the top action
-    bool UseTopAction(out AgentAction top, IGoal checkGoal)
+    //Ai gen helped alot here, I needed help understanding how the dbly linked list works
+    //i notated parts to understand it better
+    bool UseCurrAction(out NodeAction outNode, IGoal checkGoal)
     {
-        print("action doing");
-        if (currentActionPlan.ActionPriorityQueue.Count == 0) { top = null; return false; }
-        if (currentAction == currentActionPlan.ActionPriorityQueue.First)
-        { top = null; return false; }
+        print(message: $"Using top action: for goal {checkGoal.type}");
+        outNode = null;
 
-        top = currentActionPlan.ActionPriorityQueue.Dequeue();
-        print($"action -> Doing top action {top.functionality.GetType()}");
-        if (!previousActions.Contains(top))
-            previousActions.Add(top);
-        return true;
-    }
+        if (currentActionPlan == null || currentActionPlan.Current == null) return false;
 
-    void UsePreviousAction()
-    {
-        //print($"Thinking -> Attempting Prev Action");
+        var currNode = currentActionPlan?.Current;
 
-        if (previousActions[0] == null) return;
-        for (int i = 0; i < previousActions.Count; i++)
+        //if (nows) action is complete, move cursor next
+        if (node != null && node.action.Complete)
         {
-            if (currentAction != previousActions[i] || previousActions.Count == 1)
-            {
-                previousActions[i].Start();
-
-                //print($"Thinking -> Doing previous top action {previousActions[i].functionality.GetType()}");
-
-                return;
-            }
+            if (!currentActionPlan.MoveNext()) return false;
+            currNode = currentActionPlan.Current;
         }
 
+        //Try start/restart current
+        if (!currNode.action.CanStartThenStart())
+        {
+            //walk back cursor until it can run
+            while (currentActionPlan.MovePrev()) // <- walks back
+                if (currentActionPlan.Current.action.CanStartThenStart()) // <- Attempts a start
+                    break; // <- if start successfull then break out the walk back
+
+            //Whatrver node was succesfully started is where the cursor is at
+            currNode = currentActionPlan.Current;
+        }
+
+        outNode = currNode;
+        return true;
+
     }
+
+    //Same here ai -gen
+    void OnPreconditionLost()
+    {
+        if (currentActionPlan?.Current == null) return;
+
+        do
+        {
+            if (!currentActionPlan.MovePrev()) break;
+        }
+        while (!currentActionPlan.Current.action.CanStartThenStart());
+    }
+
     void GenerateActionPlan(IGoal chosenGoal, HashSet<IBelief> beliefs)
     {
         ActionPlan newActionPlan = new ActionPlan(chosenGoal, beliefs);
         currentActionPlan = newActionPlan;
-        print("Generated new ActionPlan");
+        initialActionPlan = (ActionPlan)SerializationUtility.CreateCopy(newActionPlan);
+        node = currentActionPlan?.Current;
+        print($"Generated new ActionPlan, node: {node}");
+    }
+
+    void GoBackToInitialActionPlan()
+    {
+        currentActionPlan = initialActionPlan;
     }
 
     public void SatisfyPrecondition(IBelief satsifyBelief)
     {
-        print($"SATISFY: atempt satisfy {satsifyBelief.type} cur action {currentAction}");
-        if(currentAction != null)
-            currentAction.SatisfyPrecondition(satsifyBelief);
+        print($"SATISFY: atempt satisfy {satsifyBelief.type} cur action {node.action}");
+        if (node.action != null)
+            node.action.SatisfyPrecondition(satsifyBelief);
     }
 
     public void SatisfyEffect(IBelief satsifyBelief)
     {
-        print($"SATISFY: atempt satisfy {satsifyBelief.type} cur action {currentAction}");
-        if (currentAction != null)
-            currentAction.SatisfyEffect(satsifyBelief);
+        print($"SATISFY: atempt satisfy {satsifyBelief.type} cur action {node.action}");
+        if (node.action != null)
+            node.action.SatisfyEffect(satsifyBelief);
 
     }
 }

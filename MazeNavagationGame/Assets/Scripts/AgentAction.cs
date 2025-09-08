@@ -21,12 +21,13 @@ public class AgentAction
 
     public virtual void Initialize() { }
 
-    public virtual void Start() => functionality.Start();
+    public virtual bool CanStartThenStart() => functionality.CanStartThenStart();
 
     public virtual void Update(float deltaTime)
     {
-        if(functionality != null)
-            if (functionality.CanExecute) functionality.Update(deltaTime);
+        if (functionality == null) return;
+
+        if (functionality.CanExecute) functionality.Update(deltaTime);
 
         if (!functionality.Complete) return;
     }

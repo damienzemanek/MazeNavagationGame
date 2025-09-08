@@ -1,10 +1,8 @@
-using System.Collections.Generic;
 using System;
-using UnityEngine;
-using System.Linq;
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using UnityEngine;
 using UnityEngine.AI;
-using static BinaryBelief;
 
 public interface ISensor<GoapAgent, T>
 {
@@ -57,7 +55,8 @@ public class LocationBelief : AgentBelief<Vector3>
     [SerializeReference] public ISensor<GoapAgent, Vector3> functionality;
 
     [ShowInInspector] public Vector3[] Location => data;
-    [ShowInInspector] public override Beliefs type
+    [ShowInInspector]
+    public override Beliefs type
     {
         get
         {
@@ -97,7 +96,8 @@ public class BinaryBelief : AgentBelief<bool>
 
     [ShowInInspector, ReadOnly]
     public bool[] Is => functionality != null ? functionality.data : System.Array.Empty<bool>();
-    [ShowInInspector] public override Beliefs type
+    [ShowInInspector]
+    public override Beliefs type
     {
         get
         {
@@ -117,14 +117,14 @@ public class BinaryBelief : AgentBelief<bool>
     }
     public override void SatisfyAPrecondition(IBelief givenBelief)
     {
-        Debug.Log($"PreCheck Binary Belief for {type} : {Is[0]}");
+        //Debug.Log($"PreCheck Binary Belief for {type} : {Is[0]}");
         if (Is[0])
             base.SatisfyAPrecondition(givenBelief);
     }
 
     public override void SatisfyAnEffect(IBelief givenBelief)
     {
-        Debug.Log($"PreCheck Binary Belief for {type} : {Is[0]}");
+        //Debug.Log($"PreCheck Binary Belief for {type} : {Is[0]}");
         if (Is[0])
             base.SatisfyAnEffect(givenBelief);
     }

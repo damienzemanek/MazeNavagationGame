@@ -5,10 +5,7 @@ public interface IActionFunctionality
 {
     bool CanExecute { get; }
     bool Complete { get; }
-    void Start()
-    {
-
-    }
+    bool CanStartThenStart();
 
     void Update(float deltaTime);
 
