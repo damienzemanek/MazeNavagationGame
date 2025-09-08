@@ -10,10 +10,7 @@ public interface IActionFunctionality
 
     }
 
-    void Update(float deltaTime)
-    {
-
-    }
+    void Update(float deltaTime);
 
     void Stop()
     {

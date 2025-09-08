@@ -33,7 +33,8 @@ public static class BeliefsManager
         {Beliefs.Nothing, 5},
         {Beliefs.MyLocation, 0.5f},
         {Beliefs.AmIdling, 0.49f},
-        {Beliefs.CanSeePlayer, 0.1f}
+        {Beliefs.CanSeePlayer, 0.1f},
+        {Beliefs.CanAttackPlayer, 0.05f}
     };
 
 }
@@ -44,7 +45,8 @@ public enum Beliefs
     Nothing,
     MyLocation,
     AmIdling,
-    CanSeePlayer
+    CanSeePlayer,
+    CanAttackPlayer
 }
 
 
@@ -93,17 +95,22 @@ public class BinaryBelief : AgentBelief<bool>
 {
     [SerializeReference] public ISensor<GoapAgent, bool> functionality;
 
-    [ShowInInspector] public bool[] Is => functionality.data;
+    [ShowInInspector, ReadOnly]
+    public bool[] Is => functionality != null ? functionality.data : System.Array.Empty<bool>();
     [ShowInInspector] public override Beliefs type
     {
         get
         {
             if (functionality is Nothing)
                 return Beliefs.Nothing;
-            else if(functionality is BeliefAmIdling)
+            else if (functionality is BeliefAmIdling)
                 return Beliefs.AmIdling;
-            else if(functionality is BeliefCanSeePlayer)
+            else if (functionality is BeliefCanSeePlayer)
                 return Beliefs.CanSeePlayer;
+            else if (functionality is BeliefCanAttackPlayer)
+                return Beliefs.CanAttackPlayer;
+            else
+                Debug.LogError("No type found, please manually add it");
 
             return Beliefs.NoBeliefFound;
         }
@@ -113,6 +120,13 @@ public class BinaryBelief : AgentBelief<bool>
         Debug.Log($"PreCheck Binary Belief for {type} : {Is[0]}");
         if (Is[0])
             base.SatisfyAPrecondition(givenBelief);
+    }
+
+    public override void SatisfyAnEffect(IBelief givenBelief)
+    {
+        Debug.Log($"PreCheck Binary Belief for {type} : {Is[0]}");
+        if (Is[0])
+            base.SatisfyAnEffect(givenBelief);
     }
 
     public BinaryBelief() { data = new bool[1]; }
@@ -159,13 +173,37 @@ public class BinaryBelief : AgentBelief<bool>
     public class BeliefCanSeePlayer : ISensor<GoapAgent, bool>
     {
         public bool[] data { get; set; } = new bool[1];
+        public Sensor viewSensor;
 
         public bool[] Do(GoapAgent agent) => CanSeePlayer(agent);
         bool[] CanSeePlayer(GoapAgent agent)
         {
             bool ret = false;
 
-            if (agent.GetComponent<Sensor>().inRange.current == true)
+            if (viewSensor.inRange.current == true)
+                ret = true;
+            else
+                ret = false;
+
+            data[0] = ret;
+            Debug.Log($"Thinking Checking Can See Player? {data[0]}");
+
+            return data;
+        }
+    }
+
+    [Serializable]
+    public class BeliefCanAttackPlayer : ISensor<GoapAgent, bool>
+    {
+        public bool[] data { get; set; } = new bool[1];
+        public Sensor attackSensor;
+
+        public bool[] Do(GoapAgent agent) => CanAttackPlayer(agent);
+        bool[] CanAttackPlayer(GoapAgent agent)
+        {
+            bool ret = false;
+
+            if (attackSensor.inRange.current == true)
                 ret = true;
             else
                 ret = false;

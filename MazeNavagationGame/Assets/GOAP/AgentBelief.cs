@@ -83,6 +83,7 @@ public class AgentBelief<T> : IBelief
             {
                 Debug.Log("precon updating precons");
                 SatisfyAPrecondition(b);
+                SatisfyAnEffect(b);
                 buffer.Add(item: beliefTyped);
             }
 
@@ -94,6 +95,11 @@ public class AgentBelief<T> : IBelief
     public virtual void SatisfyAPrecondition(IBelief givenBelief)
     {
         agent.SatisfyPrecondition(givenBelief);
+    }
+
+    public virtual void SatisfyAnEffect(IBelief givenBelief)
+    {
+        agent.SatisfyEffect(givenBelief);
     }
 
     public Action<IGoal> BeliefChangedCallback { get; set; }

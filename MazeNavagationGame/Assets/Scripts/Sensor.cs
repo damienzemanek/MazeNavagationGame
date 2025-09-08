@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class Sensor : MonoBehaviour, Location
 {
+    public string Name;
     public float dist;
     [SerializeField] public float distToPlayer { get => LocationServiceProvider.GetDistanceToPlayer(gameObject); }
     [SerializeField] public Location.InRange inRange;

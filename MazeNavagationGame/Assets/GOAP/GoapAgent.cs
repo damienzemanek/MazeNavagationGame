@@ -9,6 +9,7 @@ using static NPC;
 using Priority_Queue;
 using Sirenix.OdinInspector;
 using UnityEngine.Rendering;
+using System;
 
 public class GoapAgent : MonoBehaviour
 {
@@ -28,6 +29,7 @@ public class GoapAgent : MonoBehaviour
 
     public HashSet<IBelief> Beliefs = new HashSet<IBelief>();
     [SerializeReference] public List<IGoal> goals = new();
+
     private void Start()
     {
         currentAction = null;
@@ -43,6 +45,11 @@ public class GoapAgent : MonoBehaviour
     private void Update()
     {
         if (Beliefs.Count > 0 && currentActionPlan != null) EvaluateBeliefs();
+
+        if(currentAction != null)
+        {
+            currentAction.Update(Time.deltaTime);
+        }
     }
 
 
@@ -141,14 +148,23 @@ public class GoapAgent : MonoBehaviour
             print("Thinking");
             IGoal goal = ChoseGoal();
             CreateGoalQueue(goals);
-            if (CheckIfPreconditionsAreSatisifed())
-                UseTopAction(out currentAction, goal);
-            else
-                UsePreviousAction();
 
-            AttemptToMoveToNextAction();
+            if (currentAction.functionality == null)
+                UseTopAction(out currentAction, goal);
+
+            if (!CheckIfEffectsAreSatisfied())
+                currentAction.Start();
+            else if (AttemptToMoveToNextAction() == false)
+                currentAction.Start();
+            else
+                Debug.Log("Moving to next aciton");
+
             if (thinkDelayCount > thinkDelayAmountsToReEvaluate)
-            { GenerateActionPlan(goal, Beliefs); thinkDelayCount = 0; }
+            { 
+                GenerateActionPlan(goal, Beliefs);
+                currentAction = previousActions[0];
+                thinkDelayCount = 0;
+            }
         }
     }
 
@@ -173,13 +189,13 @@ public class GoapAgent : MonoBehaviour
         return goals[highestPriorityGoalsIndex];
     }
 
-    void AttemptToMoveToNextAction()
+    bool AttemptToMoveToNextAction()
     {
-        print($"thinking checking if current action complete : {currentAction.functionality.GetType()} : {currentAction.Complete}");
-        if (!currentAction.Complete) return;
-        if (!currentActionPlan.ActionPriorityQueue.First.PreConditionsSatisfied) return;
-        currentAction = null;
-        //currentActionPlan.ActionPriorityQueue.Dequeue();
+        print($"Attempting to move to next action : {currentAction.functionality.GetType()} : {currentAction.Complete}");
+        if (!currentAction.Complete) return false;
+        UseTopAction(out currentAction, ChoseGoal());
+        print($"Move complete: {currentAction.functionality.GetType()} : {currentAction.Complete}");
+        return true;
     }
 
     //Alters goal's priorities based on beliefs
@@ -199,15 +215,15 @@ public class GoapAgent : MonoBehaviour
     }
 
     //If NOT go to previous action :)
-    bool CheckIfPreconditionsAreSatisifed()
+    bool CheckIfEffectsAreSatisfied()
     {
-        print("thinking checking precons");
+        print("thinking checking effects");
         bool ret = false;
         if (currentAction == null || currentAction.functionality == null) return true; //new Action check
 
-        if (currentAction.PreConditionsSatisfied) ret = true;
+        if (currentAction.EffectsSatisfied) ret = true;
 
-        print($"thinking -> Conditions Satisifed? {ret}");
+        print($"thinking -> Effects Satisifed? {ret}");
         return ret;
 
     }
@@ -224,8 +240,10 @@ public class GoapAgent : MonoBehaviour
     {
         print("action doing");
         if (currentActionPlan.ActionPriorityQueue.Count == 0) { top = null; return false; }
+        if (currentAction == currentActionPlan.ActionPriorityQueue.First)
+        { top = null; return false; }
+
         top = currentActionPlan.ActionPriorityQueue.Dequeue();
-        top.Start();
         print($"action -> Doing top action {top.functionality.GetType()}");
         if (!previousActions.Contains(top))
             previousActions.Add(top);
@@ -259,9 +277,16 @@ public class GoapAgent : MonoBehaviour
 
     public void SatisfyPrecondition(IBelief satsifyBelief)
     {
-        print("satisfied? : goap agent trying to satisfy cond " + satsifyBelief.type);
-        foreach(AgentAction action in currentActionPlan.GetActionQueueSnapshot())
-            action.SatisfyPrecondition(satsifyBelief);
+        print($"SATISFY: atempt satisfy {satsifyBelief.type} cur action {currentAction}");
+        if(currentAction != null)
+            currentAction.SatisfyPrecondition(satsifyBelief);
+    }
+
+    public void SatisfyEffect(IBelief satsifyBelief)
+    {
+        print($"SATISFY: atempt satisfy {satsifyBelief.type} cur action {currentAction}");
+        if (currentAction != null)
+            currentAction.SatisfyEffect(satsifyBelief);
 
     }
 }

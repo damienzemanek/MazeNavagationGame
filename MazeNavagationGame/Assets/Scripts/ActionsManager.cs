@@ -3,6 +3,7 @@ using Sirenix.OdinInspector;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 
 public class ActionsManager : MonoBehaviour
@@ -20,6 +21,8 @@ public class IdleActionFunctionality : IActionFunctionality
     public IdleActionFunctionality() { }
 
     public void Start() => Complete = false;
+    public void Update(float deltaTime) { }
+
     public void CompleteAction() => Complete = true;
 
     bool CanAlwaysIdle() => true;
@@ -63,6 +66,8 @@ public class WanderActionFunctionality : IActionFunctionality
         }
     }
 
+    public void Update(float deltaTime) { }
+
     bool CanAlwaysIdle() => true;
 }
 
@@ -70,10 +75,11 @@ public class WanderActionFunctionality : IActionFunctionality
 public class FollowActionFunctionality : IActionFunctionality
 {
     public NavMeshAgent agent;
-    public Sensor sensor;
+    public Sensor viewRadiusSensor;
+    public Sensor attackRadiusSensor;
 
     public bool CanExecute { get => true; }
-    public bool Complete { get; private set; }
+    public bool Complete { get ; private set; }
     public FollowActionFunctionality() { }
 
     public void Start()
@@ -84,10 +90,59 @@ public class FollowActionFunctionality : IActionFunctionality
             if (NavMesh.SamplePosition(agent.transform.position, out var initHit, 5f, NavMesh.AllAreas))
                 agent.Warp(newPosition: initHit.position);
         }
-        if (!sensor.inRange.current) return;
-
-        agent.SetDestination(sensor.lastSeenLoc.position);
+        Complete = false;
     }
+
+    public void Update(float delatTime)
+    {
+        if (!viewRadiusSensor.inRange.current) return;
+        agent.SetDestination(viewRadiusSensor.lastSeenLoc.position);
+        Complete = attackRadiusSensor.inRange.current;
+    }
+    public void CompleteAction() => Complete = true;
+
+    //bool HasLineOfSight()
+    //{
+    //    RaycastHit hit;
+    //    if(Raycast)
+    //}
+}
+
+[Serializable]
+public class AttackActionFunctionality : IActionFunctionality
+{
+    public NavMeshAgent agent;
+    public Sensor sensor;
+    public GameObject attackObject;
+    bool attacking = false;
+
+    public bool CanExecute { get => true; }
+    public bool Complete { get; private set; }
+    public AttackActionFunctionality() { }
+
+    public void Start()
+    {
+        Debug.Log("ActionPlan -> Attempting Follow");
+        if (!sensor.inRange.current) return;
+    }
+
+    public void Update(float delatTime)
+    {
+        if (!sensor.inRange.current) return;
+        if(!attacking)
+            agent.SetDestination(sensor.lastSeenLoc.position);
+    }
+
+    IEnumerator Attack(GameObject atkObj)
+    {
+        atkObj.SetActive(true);
+        attacking = true;
+        yield return new WaitForSeconds(3f);
+        atkObj.SetActive(false);
+        attacking = false;
+
+    }
+
     public void CompleteAction() => Complete = true;
 
     //bool HasLineOfSight()

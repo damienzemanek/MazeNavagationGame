@@ -16,6 +16,8 @@ public class AgentAction
     public bool Complete => functionality.Complete;
 
     [ShowInInspector] public bool PreConditionsSatisfied => PreconditionsSatisfied();
+    [ShowInInspector] public bool EffectsSatisfied => Effectssatisfied();
+
 
     public virtual void Initialize() { }
 
@@ -23,19 +25,24 @@ public class AgentAction
 
     public virtual void Update(float deltaTime)
     {
-        if (functionality.CanExecute) functionality.Update(deltaTime);
+        if(functionality != null)
+            if (functionality.CanExecute) functionality.Update(deltaTime);
 
         if (!functionality.Complete) return;
-
-        Effects.ForEach(belief => belief.UpdateBelief(Effects.ToList()));
-
     }
     public virtual void Stop() => functionality.Stop();
 
-    public bool PreconditionsSatisfied()
+    bool PreconditionsSatisfied()
     {
         foreach (var precon in Preconditions)
             if (!precon.satisfied) return false;
+        return true;
+    }
+
+    bool Effectssatisfied()
+    {
+        foreach (var eff in Effects)
+            if (!eff.satisfied) return false;
         return true;
     }
 
@@ -46,17 +53,29 @@ public class AgentAction
         {
             if (precon == null) continue;
             if (precon.type != belief.type) continue;
-
-            if (BoxedDataEqual(precon.boxedData, belief.boxedData)) 
-                precon.satisfied = true;
+            precon.satisfied = true;
 
             Debug.Log(message: $"Precon {precon.type} satisfied? : {precon.satisfied}");
 
         }
     }
 
+    public void SatisfyEffect(IBelief belief)
+    {
+        Debug.Log("satisfied? : Action trying to satisfy cond " + belief.type);
+        foreach (IBelief effect in Effects)
+        {
+            if (effect == null) continue;
+            if (effect.type != belief.type) continue;
+            effect.satisfied = true;
 
-   //Ai gen compare for the boxed data
+            Debug.Log(message: $"Effect {effect.type} satisfied? : {effect.satisfied}");
+
+        }
+    }
+
+
+    //Ai gen compare for the boxed data
     static bool BoxedDataEqual(object a, object b)
     {
         if (ReferenceEquals(a, b)) return true;
