@@ -9,7 +9,7 @@ public class Pickup : MonoBehaviour, Location
     public float dist;
     [SerializeField] public float distToPlayer { get => LocationServiceProvider.GetDistanceToPlayer(gameObject); }
     [SerializeField] public Location.InRange inRange;
-    [ShowInInspector] public float withinRange { get => item.withinRange; }
+    [ShowInInspector] public float withinRange { get => (item != null) ? item.withinRange : 0; }
 
     float Location.distToPlayer => throw new NotImplementedException();
 

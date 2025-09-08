@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f140b67e81dc1d847878dfa001faca4e, type: 3}
-  m_Name: Hammer
+  m_Name: Key
   m_EditorClassIdentifier: 
-  itenName: Hammer
-  itemPrefab: {fileID: 5403954003008848034, guid: ca73f695e18af2f4f9671fd3a8d235e6, type: 3}
-  pickupPrefab: {fileID: 5901015237064759560, guid: a897bc9d83eccb5438b39bbcb181ed24, type: 3}
-  singleUse: 0
+  itenName: Key
+  itemPrefab: {fileID: 3349586509400824405, guid: edd6888eecf5ff44d92863fbf7360015, type: 3}
+  pickupPrefab: {fileID: 0}
+  singleUse: 1
   withinRange: 1.4
