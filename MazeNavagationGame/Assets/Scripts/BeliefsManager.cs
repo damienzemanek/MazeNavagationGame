@@ -143,7 +143,7 @@ public class BinaryBelief : AgentBelief<bool>
                 ret = false;
 
             buffer[0] = ret;
-            Debug.Log($"Checking Idle {buffer[0]}");
+            //Debug.Log($"Checking Idle {buffer[0]}");
 
             return buffer;
         }
@@ -165,7 +165,7 @@ public class BinaryBelief : AgentBelief<bool>
                 ret = false;
 
             buffer[0] = ret;
-            Debug.Log($"Updating Checking Can See Player? {buffer[0]}");
+            Debug.Log($"Thinking Checking Can See Player? {buffer[0]}");
 
             return buffer;
         }

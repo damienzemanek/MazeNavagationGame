@@ -15,6 +15,8 @@ public class AgentAction
     [SerializeReference] public IActionFunctionality functionality;
     public bool Complete => functionality.Complete;
 
+    [ShowInInspector] public bool PreConditionsSatisfied => PreconditionsSatisfied();
+
     public virtual void Initialize() { }
 
     public virtual void Start() => functionality.Start();
@@ -29,6 +31,13 @@ public class AgentAction
 
     }
     public virtual void Stop() => functionality.Stop();
+
+    public bool PreconditionsSatisfied()
+    {
+        foreach (var precon in Preconditions)
+            if (!precon.satisfied) return false;
+        return true;
+    }
 
 }
 

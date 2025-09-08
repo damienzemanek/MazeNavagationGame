@@ -173,7 +173,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thinkDelay: 1
   thinkDelayCount: 0
-  thinkDelayAmountsToReEvaluate: 3
+  thinkDelayAmountsToReEvaluate: 25
+  previousActions: []
   currentAction:
     Preconditions: []
     Effects:
@@ -199,6 +200,7 @@ MonoBehaviour:
     - rid: 9200140611604185262
       type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
       data:
+        _refreshing: 0
         data: 01
         functionality:
           rid: 9200140611604185263
@@ -239,6 +241,7 @@ MonoBehaviour:
     - rid: 9200140633805422731
       type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
       data:
+        _refreshing: 0
         data: 01
         functionality:
           rid: 9200140633805422732
@@ -249,21 +252,33 @@ MonoBehaviour:
       type: {class: AgentAction, ns: , asm: Assembly-CSharp}
       data:
         Preconditions: []
-        Effects: []
+        Effects:
+        - rid: 9200140633805422767
         functionality:
           rid: 9200140633805422735
     - rid: 9200140633805422735
       type: {class: WanderActionFunctionality, ns: , asm: Assembly-CSharp}
       data:
         agent: {fileID: 93272020}
-        wanderRadius: 4
+        wanderRadius: 9
     - rid: 9200140633805422738
       type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
       data:
+        _refreshing: 0
         data: 00
         functionality:
           rid: 9200140633805422744
     - rid: 9200140633805422744
+      type: {class: BinaryBelief/BeliefCanSeePlayer, ns: , asm: Assembly-CSharp}
+      data: 
+    - rid: 9200140633805422767
+      type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
+      data:
+        _refreshing: 0
+        data: 01
+        functionality:
+          rid: 9200140633805422768
+    - rid: 9200140633805422768
       type: {class: BinaryBelief/BeliefCanSeePlayer, ns: , asm: Assembly-CSharp}
       data: 
 --- !u!114 &93272019

@@ -9,7 +9,6 @@ public interface IGoal
     Goals type { get; }
     int initialPriority { get; }
     int currentPriority { get; set; }
-
     [SerializeField] List<AgentAction> RequiredActionsToAchieveGoal { get; set; }
     [SerializeField] List<IBelief> DesiredEffects { get; set; }
     int SetPriority(int amount);

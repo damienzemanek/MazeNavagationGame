@@ -32,7 +32,8 @@ public class WanderActionFunctionality : IActionFunctionality
     public float wanderRadius;
 
     public bool CanExecute { get => CanAlwaysIdle(); }
-    public bool Complete { get; private set; }
+    bool complt = true;
+    [ShowInInspector] public bool Complete { get => complt; private set => complt = value; }
     public WanderActionFunctionality() { }
 
     public void Start()
@@ -61,7 +62,6 @@ public class WanderActionFunctionality : IActionFunctionality
 
         }
     }
-    public void CompleteAction() => Complete = true;
 
     bool CanAlwaysIdle() => true;
 }

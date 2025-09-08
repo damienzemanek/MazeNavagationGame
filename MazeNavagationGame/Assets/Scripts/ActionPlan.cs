@@ -32,7 +32,7 @@ public class ActionPlan
             ActionPriorityQueue.Enqueue(action, ActionPriorityQueue.Count + 1);
         }
 
-        Debug.Log($"Action Plan Count: [{ActionPriorityQueue.Count}]");
+        //Debug.Log($"Action Plan Count: [{ActionPriorityQueue.Count}]");
     }
 
 

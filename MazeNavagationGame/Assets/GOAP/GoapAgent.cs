@@ -8,6 +8,7 @@ using System.Net;
 using static NPC;
 using Priority_Queue;
 using Sirenix.OdinInspector;
+using UnityEngine.Rendering;
 
 public class GoapAgent : MonoBehaviour
 {
@@ -15,7 +16,7 @@ public class GoapAgent : MonoBehaviour
     public int thinkDelayCount = 0;
     public int thinkDelayAmountsToReEvaluate = 3;
 
-    [ShowInInspector] public AgentAction previousAction;
+    [ShowInInspector] public List<AgentAction> previousActions;
 
     [ShowInInspector] public IGoal currentGoal;
     [ShowInInspector] public List<IGoal> GoalQueueView => GetGoalQueueSnapshot();
@@ -23,20 +24,25 @@ public class GoapAgent : MonoBehaviour
 
     public SimplePriorityQueue<IGoal, int> GoalPriorityQueue = new();
     [BoxGroup("Action Plan")] public AgentAction currentAction;
-    [BoxGroup("Action Plan")] [ShowInInspector] public ActionPlan currentActionPlan;
+    [BoxGroup("Action Plan")][ShowInInspector] public ActionPlan currentActionPlan;
 
     public HashSet<IBelief> Beliefs = new HashSet<IBelief>();
     [SerializeReference] public List<IGoal> goals = new();
     private void Start()
     {
+        currentAction = null;
+        currentGoal = null;
+        currentActionPlan = null;
+
         Initialize();
         StartCoroutine(PriorityManage());
-        print("Started AI");
+
+        //print("Started AI");
     }
 
     private void Update()
     {
-        if(Beliefs.Count > 0) EvaluateBeliefs();
+        if (Beliefs.Count > 0) EvaluateBeliefs();
     }
 
 
@@ -56,7 +62,7 @@ public class GoapAgent : MonoBehaviour
         IGoal goal = ChoseGoal();
         GenerateActionPlan(goal, Beliefs);
 
-        print("Goap Agent finished Initializing");
+        //print("Goap Agent finished Initializing");
     }
 
     //AI gen function so i can see the queue in inspector
@@ -78,7 +84,7 @@ public class GoapAgent : MonoBehaviour
              .ToList()
              .ForEach(g => GoalPriorityQueue.Enqueue(g, -g.currentPriority));
 
-        print($"finished creating goal queue, count:[{GoalPriorityQueue.Count}]");
+        //print($"finished creating goal queue, count:[{GoalPriorityQueue.Count}]");
     }
 
     HashSet<Beliefs> seen = new HashSet<Beliefs>();
@@ -104,8 +110,8 @@ public class GoapAgent : MonoBehaviour
                     .ToList();
                 return allBeliefs;
             })
-            .ToList() 
-            .ForEach(belief => 
+            .ToList()
+            .ForEach(belief =>
             {
 
                 //print($"Checking belief {belief.GetBelief().ToString()}");
@@ -114,6 +120,7 @@ public class GoapAgent : MonoBehaviour
 
                 IBelief copy = belief.CreateCopy(belief);
                 copy.refreshing = true;
+                copy.satisfied = true;
                 copy.SetAgent(this);
                 copy.BeliefChangedCallback += CallbackBeliefActionUse;
 
@@ -121,7 +128,7 @@ public class GoapAgent : MonoBehaviour
             });
 
         Beliefs = ret;
-        print($"finished creating belief hash, count:[{Beliefs.Count}]");
+        //print($"finished creating belief hash, count:[{Beliefs.Count}]");
     }
 
 
@@ -139,6 +146,8 @@ public class GoapAgent : MonoBehaviour
                 UseTopAction(out currentAction, goal);
             else
                 UsePreviousAction();
+
+            AttemptToMoveToNextAction();
             if (thinkDelayCount > thinkDelayAmountsToReEvaluate)
             { GenerateActionPlan(goal, Beliefs); thinkDelayCount = 0; }
         }
@@ -150,7 +159,7 @@ public class GoapAgent : MonoBehaviour
         int highestPriorityGoalsIndex = -1;
         int highestPriority = 0;
 
-        for(int i = 0;  i < goals.Count; i++)
+        for (int i = 0; i < goals.Count; i++)
         {
             if (goals[i].currentPriority > highestPriority)
             {
@@ -165,6 +174,14 @@ public class GoapAgent : MonoBehaviour
         return goals[highestPriorityGoalsIndex];
     }
 
+    void AttemptToMoveToNextAction()
+    {
+        print($"thinking checking if current action complete : {currentAction.functionality.GetType()} : {currentAction.Complete}");
+        if (!currentAction.Complete) return;
+        currentAction = null;
+        //currentActionPlan.ActionPriorityQueue.Dequeue();
+    }
+
     //Alters goal's priorities based on beliefs
     void EvaluateBeliefs()
     {
@@ -174,7 +191,7 @@ public class GoapAgent : MonoBehaviour
             bool dueToUpdate = belief.GetRefreshDelay() <= 0f || (Time.time - belief.timeStamp) >= belief.GetRefreshDelay();
             if (dueToUpdate)
             {
-                print($"Updating Belief {belief.type}");
+                //print($"Updating Belief {belief.type}");
                 belief.UpdateBelief((IReadOnlyList<IBelief>)Beliefs.ToList());
             }
         }
@@ -184,12 +201,34 @@ public class GoapAgent : MonoBehaviour
     //If NOT go to previous action :)
     bool CheckIfPreconditionsAreSatisifed()
     {
+        print("thinking checking precons");
         bool ret = false;
-        var effects = currentAction?.Preconditions;
-        if (effects == null) ret = true;
-        ret = effects.All(effect => effect != null && effect.condition == true);
-        print("Thinking : Check if current actions preconditions are satisfied" + ret);
+        if (currentAction == null || currentAction.functionality == null) return true; //new Action check
+
+        var preCons = currentAction.Preconditions;
+
+        var Type = Beliefs
+            .Where(b => b != null)
+            .GroupBy(b => b.type)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        foreach(var requirement in preCons)
+        {
+            if (!Type.TryGetValue(requirement.type, out var runtime))
+                ret = true; //No Preconditions needed
+            print($"thinking runtime cond {runtime.boxedData} : requiremnt cond {requirement.boxedData}");
+
+            if (requirement == null) continue;
+
+            if (runtime.boxedData == requirement.boxedData) requirement.satisfied = true;
+
+            if (requirement.satisfied != true) return false;
+        }
+
+
+        print($"thinking -> Conditions Satisifed? {ret}");
         return ret;
+
     }
 
     void CallbackBeliefActionUse(IGoal origGoal)
@@ -202,21 +241,34 @@ public class GoapAgent : MonoBehaviour
     //Attempt to do the top action
     bool UseTopAction(out AgentAction top, IGoal checkGoal)
     {
+        print("action doing");
         if (currentActionPlan.ActionPriorityQueue.Count == 0) { top = null; return false; }
         top = currentActionPlan.ActionPriorityQueue.Dequeue();
         top.Start();
-        print($"ActionPlan -> Doing top action {top}");
-        previousAction = top;
+        print($"action -> Doing top action {top.functionality.GetType()}");
+        if (!previousActions.Contains(top))
+            previousActions.Add(top);
         return true;
     }
 
     void UsePreviousAction()
     {
-        if (previousAction == null) return;
-        previousAction.Start();
-        print($"ActionPlan -> Doing previous top action {previousAction}");
-    }
+        //print($"Thinking -> Attempting Prev Action");
 
+        if (previousActions[0] == null) return;
+        for (int i = 0; i < previousActions.Count; i++)
+        {
+            if (currentAction != previousActions[i] || previousActions.Count == 1)
+            {
+                previousActions[i].Start();
+
+                //print($"Thinking -> Doing previous top action {previousActions[i].functionality.GetType()}");
+
+                return;
+            }
+        }
+
+    }
     void GenerateActionPlan(IGoal chosenGoal, HashSet<IBelief> beliefs)
     {
         ActionPlan newActionPlan = new ActionPlan(chosenGoal, beliefs);
