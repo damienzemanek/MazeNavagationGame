@@ -10,13 +10,9 @@ using UnityEngine.AI;
 [Serializable]
 public class AgentAction
 {
-    public virtual string Name { get; set; }
-    [ShowInInspector] public virtual float Cost { get; private set; }
-
     [SerializeReference] public List<IBelief> Preconditions = new List<IBelief>();
     [SerializeReference] public List<IBelief> Effects = new List<IBelief>();
-
-    IAction functionality;
+    [SerializeReference] public IActionFunctionality functionality;
     public bool Complete => functionality.Complete;
 
     public virtual void Initialize() { }
@@ -33,50 +29,9 @@ public class AgentAction
 
     }
     public virtual void Stop() => functionality.Stop();
+
 }
 
 
-public class IdleAction : IAction
-{
-    public bool CanExecute { get => CanAlwaysIdle(); }
-    public bool Complete { get; private set; }
-    public IdleAction() { }
-
-    public void Start() => Complete = false;
-    public void CompleteAction() => Complete = true;
-
-    bool CanAlwaysIdle() => true;
-}
-
-public class WanderAction : IAction
-{
-    readonly NavMeshAgent agent;
-    readonly float wanderRadius;
-
-    public bool CanExecute { get => CanAlwaysIdle(); }
-    public bool Complete { get; private set; }
-    public WanderAction() { }
-
-    public void Start()
-    {
-        for (int i = 0; i < 5; i++)
-        {
-            Vector2 cir = UnityEngine.Random.insideUnitCircle * wanderRadius;
-            Vector3 randomDir = new Vector3(cir.x, 0, cir.y);
-
-            NavMeshHit hit;
-
-            if (NavMesh.SamplePosition(agent.transform.position + randomDir, out hit, wanderRadius, 1))
-            {
-                agent.SetDestination(hit.position);
-                return;
-            }
-
-        }
-    }
-    public void CompleteAction() => Complete = true;
-
-    bool CanAlwaysIdle() => true;
-}
 
 

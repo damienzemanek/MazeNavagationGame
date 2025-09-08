@@ -11,33 +11,27 @@ using Sirenix.OdinInspector;
 
 public class GoapAgent : MonoBehaviour
 {
-    public bool thinking;
     public float thinkDelay = 3f;
+    public int thinkDelayCount = 0;
+    public int thinkDelayAmountsToReEvaluate = 3;
 
     [ShowInInspector] public IGoal currentGoal;
-    public AgentAction currentAction;
-
     [ShowInInspector] public List<IGoal> GoalQueueView => GetGoalQueueSnapshot();
     [ShowInInspector] public List<IBelief> BeliefsHashView => Beliefs.ToList();
 
     public SimplePriorityQueue<IGoal, int> GoalPriorityQueue = new();
-    [ShowInInspector] public ActionPlan currentActionPlan;
+    [BoxGroup("Action Plan")] public AgentAction currentAction;
+    [BoxGroup("Action Plan")] [ShowInInspector] public ActionPlan currentActionPlan;
 
     public HashSet<IBelief> Beliefs = new HashSet<IBelief>();
     [SerializeReference] public List<IGoal> goals = new();
     private void Start()
     {
         Initialize();
+        StartCoroutine(PriorityManage());
     }
 
-    private void Update()
-    {
-        if (!thinking)
-        {
-            thinking = true;
-            StartCoroutine(PriorityManage());
-        }
-    }
+
 
     void Initialize()
     {
@@ -50,6 +44,9 @@ public class GoapAgent : MonoBehaviour
 
         CreateGoalQueue(liveGoals);
         CreateBeliefHashSet(liveGoals);
+        EvaluateBeliefs();
+        IGoal goal = ChoseGoal();
+        GenerateActionPlan(goal, Beliefs);
 
         print("Goap Agent finished Initializing");
     }
@@ -88,7 +85,7 @@ public class GoapAgent : MonoBehaviour
             .ToList() 
             .ForEach(belief => 
             {
-                print($"Checking belief {belief.GetBelief().ToString()}");
+                //print($"Checking belief {belief.GetBelief().ToString()}");
                 if (!seen.Contains(belief.type)) seen.Add(belief.type);
                 else return;
 
@@ -105,42 +102,53 @@ public class GoapAgent : MonoBehaviour
     bool TryDequeueTop(out IGoal top)
     {
         if (GoalPriorityQueue.Count == 0) { top = null; return false; }
+        if (GoalPriorityQueue.TryFirst(out IGoal first))
+            if (!first.AllRequiedActionsPreConditionsSatisfied())
+                { top = null; return false; }
+
         top = GoalPriorityQueue.Dequeue();
         return true;
     }
 
 
+
     IEnumerator PriorityManage()
     {
-        while (thinking)
+        while (true)
         {
             yield return new WaitForSeconds(thinkDelay);
-
-
+            thinkDelayCount++;
+            print(thinkDelayCount);
 
             EvaluateBeliefs();
             IGoal goal = ChoseGoal();
-            print(goal.type.ToString());
-            DetermineActionPlan(goal);
+            CreateGoalQueue(goals);
+            UseTopAction(out currentAction);
+            if (CheckIfCurrentActionsEffectsAreSatisfied()) UseTopAction(out currentAction);
+
+            if (thinkDelayCount > thinkDelayAmountsToReEvaluate)
+            { GenerateActionPlan(goal, Beliefs); thinkDelayCount = 0; }
         }
     }
 
     //Gets the goal with the highest priority
     IGoal ChoseGoal()
     {
-        int highestPriorityGoalsIndex = 0;
+        int highestPriorityGoalsIndex = -1;
         int highestPriority = 0;
 
         for(int i = 0;  i < goals.Count; i++)
         {
-            if (goals[i].currentPriority > highestPriorityGoalsIndex)
+            if (goals[i].currentPriority > highestPriority)
             {
                 highestPriorityGoalsIndex = i;
                 highestPriority = goals[i].currentPriority;
+                //print($"chosen New highest pri goal {goals[i]} pri {goals[i].currentPriority}");
             }
         }
 
         currentGoal = goals[highestPriorityGoalsIndex];
+        //print($"chosen highest pri goal {goals[highestPriorityGoalsIndex]}");
         return goals[highestPriorityGoalsIndex];
     }
 
@@ -159,8 +167,29 @@ public class GoapAgent : MonoBehaviour
 
     }
 
-    void DetermineActionPlan(IGoal chosenGoal)
+    //If so move to next action in the queue
+    bool CheckIfCurrentActionsEffectsAreSatisfied()
     {
+        var effects = currentAction?.Effects;
+        if (effects == null) return true;
 
+        return effects.All(effect => effect != null && (effect.condition?.Invoke() ?? false));
+    }
+
+    //Attempt to do the top action
+    bool UseTopAction(out AgentAction top)
+    {
+        if (currentActionPlan.ActionPriorityQueue.Count == 0) { top = null; return false; }
+        top = currentActionPlan.ActionPriorityQueue.Dequeue();
+        top.Start();
+        print($"ActionPlan -> Doing top action {top}");
+        return true;
+    }
+
+    void GenerateActionPlan(IGoal chosenGoal, HashSet<IBelief> beliefs)
+    {
+        ActionPlan newActionPlan = new ActionPlan(chosenGoal, beliefs);
+        currentActionPlan = newActionPlan;
+        print("Generated new ActionPlan");
     }
 }

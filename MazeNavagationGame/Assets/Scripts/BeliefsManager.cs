@@ -30,7 +30,8 @@ public static class BeliefsManager
         {Beliefs.NoBeliefFound, 0},
         {Beliefs.Nothing, 5},
         {Beliefs.MyLocation, 0.5f},
-        {Beliefs.AmIdling, 0.49f}
+        {Beliefs.AmIdling, 0.49f},
+        {Beliefs.CanSeePlayer, 0.1f}
     };
 
 }
@@ -40,7 +41,8 @@ public enum Beliefs
     NoBeliefFound,
     Nothing,
     MyLocation,
-    AmIdling
+    AmIdling,
+    CanSeePlayer
 }
 
 
@@ -65,6 +67,7 @@ public class LocationBelief : AgentBelief<Vector3>
 
     public override Vector3[] UpdateBelief(List<AgentBelief<Vector3>> beliefs)
     {
+        base.UpdateBelief(beliefs);
         data = functionality.Do(agent, data);
         return Location;
     }
@@ -98,6 +101,8 @@ public class BinaryBelief : AgentBelief<bool>
                 return Beliefs.Nothing;
             else if(functionality is BeliefAmIdling)
                 return Beliefs.AmIdling;
+            else if(functionality is BeliefCanSeePlayer)
+                return Beliefs.CanSeePlayer;
 
             return Beliefs.NoBeliefFound;
         }
@@ -106,6 +111,7 @@ public class BinaryBelief : AgentBelief<bool>
     public BinaryBelief() { data = new bool[1]; }
     public override bool[] UpdateBelief(List<AgentBelief<bool>> beliefs)
     {
+        base.UpdateBelief(beliefs);
         data = functionality.Do(agent, data);
         return Is;
     }
@@ -138,6 +144,26 @@ public class BinaryBelief : AgentBelief<bool>
 
             buffer[0] = ret;
             Debug.Log($"Checking Idle {buffer[0]}");
+
+            return buffer;
+        }
+    }
+
+    [Serializable]
+    public class BeliefCanSeePlayer : ISensor<GoapAgent, bool>
+    {
+        private readonly bool[] buffer = new bool[1];
+
+        public bool[] Do(GoapAgent agent, bool[] data) => CanSeePlayer(agent, data);
+        bool[] CanSeePlayer(GoapAgent agent, bool[] data)
+        {
+            bool ret = true;
+
+            if (agent.GetComponent<Sensor>().inRange.current == true)
+                ret = true;
+
+            buffer[0] = ret;
+            Debug.Log($"Checking Can See Player? {buffer[0]}");
 
             return buffer;
         }

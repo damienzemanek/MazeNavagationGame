@@ -22,8 +22,10 @@ public interface IBelief
     float GetRefreshDelay();
     bool EvaluateCondition();
     IBelief CreateCopy(IBelief copy);
-
     Beliefs GetBelief();
+    Action BeliefChangedCallback { get; set; }
+
+    //void CheckIfBeliefIs
 
 }
 
@@ -72,7 +74,11 @@ public class AgentBelief<T> : IBelief
     }
 
     //Generic UpdateBelief
-    public virtual T[] UpdateBelief(List<AgentBelief<T>> beliefs) => data;
+    public virtual T[] UpdateBelief(List<AgentBelief<T>> beliefs)
+    {
+        BeliefChangedCallback?.Invoke();
+        return data;
+    }
 
     //Interface UpdateBelief -> Generic
     public void UpdateBelief(IReadOnlyList<IBelief> beliefs)
@@ -86,6 +92,8 @@ public class AgentBelief<T> : IBelief
         data = UpdateBelief(buffer);
         timeStamp = Time.time;
     }
+
+    public Action BeliefChangedCallback { get; set; }
 
     private readonly List<AgentBelief<T>> buffer = new List<AgentBelief<T>>(20);
 

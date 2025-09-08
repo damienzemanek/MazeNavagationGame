@@ -5,25 +5,41 @@ using NUnit.Framework;
 using Priority_Queue;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using static NPC;
 
 [Serializable]
 public class ActionPlan 
 {
-    public AgentGoal Goal { get; }
+    bool initComplete;
+    public IGoal Goal { get; }
+
+    [ShowInInspector] public List<AgentAction> ActionPlanView => GetActionQueueSnapshot();
 
     [ShowInInspector] public SimplePriorityQueue<AgentAction, int> ActionPriorityQueue = new();
     public float totalCost { get; set; }
 
-    public ActionPlan(AgentGoal goal, SimplePriorityQueue<AgentAction, int> queue, float totalCost)
+    public ActionPlan(IGoal goal, HashSet<IBelief> beliefs)
     {
         Goal = goal;
-        ActionPriorityQueue = queue;
-        this.totalCost = totalCost;
+        GenerateActions(goal);
+        initComplete = true;
     }
+
+    void GenerateActions(IGoal goal)
+    {
+        foreach (AgentAction action in goal.RequiredActionsToAchieveGoal)
+        {
+            ActionPriorityQueue.Enqueue(action, ActionPriorityQueue.Count + 1);
+        }
+
+        Debug.Log($"Action Plan Count: [{ActionPriorityQueue.Count}]");
+    }
+
 
     //AI gen function so i can see the queue in inspector
     private List<AgentAction> GetActionQueueSnapshot()
     {
+        if (!initComplete) return null;
         // If you enqueued with NEGATED priorities (max-first), keep OrderBy(...)
         return ActionPriorityQueue
             .Select(a => new { A = a, P = ActionPriorityQueue.GetPriority(a) })

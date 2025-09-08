@@ -1,11 +1,10 @@
 ﻿using UnityEngine.AI;
 using UnityEngine;
 
-interface IAction
+public interface IActionFunctionality
 {
     bool CanExecute { get; }
     bool Complete { get; }
-
     void Start()
     {
 
