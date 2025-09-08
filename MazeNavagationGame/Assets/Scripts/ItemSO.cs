@@ -7,4 +7,5 @@ public class ItemSO : ScriptableObject
     public GameObject itemPrefab;
     public GameObject pickupPrefab;
     public bool singleUse;
+    public float withinRange;
 }

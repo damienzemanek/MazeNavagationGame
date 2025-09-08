@@ -100,4 +100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: 3fbc4c06270de3a41ad018b68e777589, type: 2}
-  dist: 0
+  dist: 1.2
+  inRange:
+    current: 0
+    last: 0

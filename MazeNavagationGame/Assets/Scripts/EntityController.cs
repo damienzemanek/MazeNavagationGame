@@ -18,6 +18,8 @@ public class EntityController : MonoBehaviour
     public InputAction ia_Use;
     public Action use;
 
+    public InputAction ia_Dash;
+    public Action dash;
 
     private void Awake()
     {
@@ -41,6 +43,10 @@ public class EntityController : MonoBehaviour
         ia_Use = Controls.Player.Use;
         ia_Use.Enable();
         ia_Use.performed += ctx => use?.Invoke();
+
+        ia_Dash = Controls.Player.Dash;
+        ia_Dash.Enable();
+        ia_Dash.performed += ctx => dash?.Invoke();
     }
 
     void OnDisable()
@@ -56,6 +62,9 @@ public class EntityController : MonoBehaviour
 
         use = null;
         ia_Use?.Disable();
+
+        dash = null;
+        ia_Dash?.Disable();
     }
 
 }

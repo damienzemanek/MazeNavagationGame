@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(requiredComponent: typeof(EntityController))]
@@ -6,6 +7,10 @@ public class EntityMovement : MonoBehaviour
     EntityController Controls;
     [SerializeField] Rigidbody rb;
     [SerializeField] float moveMultiplier;
+    [SerializeField] float dashMultiplier;
+    public bool dashOnCooldown;
+    public float dashCooldownTime;
+
     float moveAmount;
 
     private void Awake()
@@ -13,9 +18,37 @@ public class EntityMovement : MonoBehaviour
         Controls = GetComponent<EntityController>();
     }
 
+    private void OnEnable()
+    {
+        Controls.dash += Dash;
+    }
+
+    private void OnDisable()
+    {
+        Controls.dash -= Dash;
+    }
+
     private void Update()
     {
         MovePlayer();
+    }
+
+    void Dash()
+    {
+        if(!dashOnCooldown)
+        {
+            rb.AddForce(transform.right * dashMultiplier, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * dashMultiplier / 4, ForceMode.Impulse);
+            StartCoroutine(DashCooldown());
+        }
+
+    }
+
+    IEnumerator DashCooldown()
+    {
+        dashOnCooldown = true;
+        yield return new WaitForSeconds(dashCooldownTime);
+        dashOnCooldown = false;
     }
 
     void MovePlayer()

@@ -1,4 +1,5 @@
 using System;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 
@@ -8,8 +9,7 @@ public class Pickup : MonoBehaviour, Location
     public float dist;
     [SerializeField] public float distToPlayer { get => LocationServiceProvider.GetDistanceToPlayer(gameObject); }
     [SerializeField] public Location.InRange inRange;
-    [SerializeField] float _withinRange;
-    public float withinRange { get => _withinRange; set => _withinRange = value; }
+    [ShowInInspector] public float withinRange { get => item.withinRange; }
 
     float Location.distToPlayer => throw new NotImplementedException();
 

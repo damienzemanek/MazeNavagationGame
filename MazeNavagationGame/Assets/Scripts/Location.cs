@@ -6,7 +6,7 @@ public interface Location
 {
     // public abstract bool inRange { get; set; }
 
-    public abstract float withinRange { get; set; }
+    public abstract float withinRange { get; }
     public abstract float distToPlayer { get; }
 
     [Serializable]
