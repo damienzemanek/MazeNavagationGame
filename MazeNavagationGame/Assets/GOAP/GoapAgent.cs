@@ -19,7 +19,8 @@ public class GoapAgent : MonoBehaviour
     [ShowInInspector] public List<IBelief> BeliefsHashView => Beliefs.ToList();
 
     public SimplePriorityQueue<IGoal, int> GoalPriorityQueue = new();
-    [BoxGroup("Action Plan")][ShowInInspector] public NodeAction node;
+    public string currentNode => (node != null) ? GetNodeName() : "No current node";
+    [BoxGroup("Action Plan")][ShowInInspector] public NodeAction node => (currentActionPlan != null) ? GetNode() : null;
     [BoxGroup("Action Plan")][ShowInInspector] public ActionPlan currentActionPlan;
     ActionPlan initialActionPlan;
 
@@ -29,7 +30,6 @@ public class GoapAgent : MonoBehaviour
 
     private void Start()
     {
-        node = null;
         currentGoal = null;
         currentActionPlan = null;
 
@@ -37,6 +37,16 @@ public class GoapAgent : MonoBehaviour
         StartCoroutine(PriorityManage());
 
         //print("Started AI");
+    }
+
+
+    NodeAction GetNode()
+    {
+        return currentActionPlan.Current;
+    }
+    string GetNodeName()
+    {
+        return node.action.functionality.ToString();
     }
 
     private void Update()
@@ -159,29 +169,18 @@ public class GoapAgent : MonoBehaviour
             }
 
 
-            if (node.action.functionality == null)
-                UseCurrAction(out node, goal);
-
-            if (!CheckIfEffectsAreSatisfied())
-            {
-                if (node.action.CanStartThenStart() == false)
-                    resetActionQueueCount++;
-            }
-            else if (AttemptToMoveToNextAction() == false)
-            {
-                if (node.action.CanStartThenStart() == false)
-                    resetActionQueueCount++;
-            }
+            if (!UsedAnAction(goal))
+                resetActionQueueCount++;
             else
-                Debug.Log("Moving to next aciton");
+                resetActionQueueCount--;
 
 
+            if (resetActionQueueCount <= 0) resetActionQueueCount = 0;
 
             if (resetActionQueueCount > resetActionQueueCountsToReEvaluate)
             {
                 resetActionQueueCount = 0;
                 GoBackToInitialActionPlan();
-                node.action.functionality = null;
             }
         }
     }
@@ -208,22 +207,37 @@ public class GoapAgent : MonoBehaviour
     }
 
     //Ai gen help
-    bool AttemptToMoveToNextAction()
+    bool MovedToNextAction()
     {
+        print($"MOVING to NEXT: {node.next.action.functionality}");
         if (node == null || node.action == null || !node.action.Complete) return false;
 
-        if (!currentActionPlan.MoveNext()) return false; //Atempts a walk forward
-        node = currentActionPlan.Current; //if succesfful set the new current node as the next
-
-        if (node.action.CanStartThenStart()) return true; //if can start, movefwd else walk back
-
-        while (currentActionPlan.MovePrev())
+        if (currentActionPlan.MoveNext())
         {
-            node = currentActionPlan.Current;
-            if (node.action.CanStartThenStart()) return true;
+            if (node.action.CanStartThenStart())
+            {
+                print($"SUCCESS moved forward, {node.prevName} --> {node.nextName}");
+                return true;
+            }
+            else
+            {
+                print($"FAIL -> Att. to move back {node.prevName} <--- {node.Name} ");
+            }
+        }
+        else
+        {
+            while (currentActionPlan.MovePrev())
+            {
+                if (node.action.CanStartThenStart())
+                {
+                    print($"SUCESS started prev node -> {node.action.functionality}, MOVED BACK");
+                    return true;
+                }
+            }
+            print($"MOVED ALL THE WAY BACK {node.action.functionality}");
         }
 
-        return false;
+        return true;
     }
 
     //Alters goal's priorities based on beliefs
@@ -243,14 +257,14 @@ public class GoapAgent : MonoBehaviour
     }
 
     //If NOT go to previous action :)
-    bool CheckIfEffectsAreSatisfied()
+    bool CanMoveForward()
     {
         //print("thinking checking effects");
         bool ret = false;
         if (node == null || node.action == null || node.action.functionality == null)
             ret = false;
 
-        if (node.action.EffectsSatisfied) ret = true;
+        if (node.action.EffectsSatisfied && node.action.PreConditionsSatisfied) ret = true;
         return ret;
 
     }
@@ -258,41 +272,53 @@ public class GoapAgent : MonoBehaviour
     //Attempt to do the top action
     //Ai gen helped alot here, I needed help understanding how the dbly linked list works
     //i notated parts to understand it better
-    bool UseCurrAction(out NodeAction outNode, IGoal checkGoal)
+    bool UsedAnAction(IGoal checkGoal)
     {
-        print(message: $"Using top action: for goal {checkGoal.type}");
-        outNode = null;
+        print(message: $"Att. to use curr action {node.action.functionality}");
 
-        if (currentActionPlan == null || currentActionPlan.Current == null) return false;
+        //Guard Clauses
+        if (currentActionPlan == null || currentActionPlan.Current == null || node == null)
+        {
+            print(message: $"Exited Early");
+            return false;
+        }
 
         var currNode = currentActionPlan?.Current;
 
         //if (nows) action is complete, move cursor next
-        if (node != null && node.action.Complete)
-        {
-            if (!currentActionPlan.MoveNext()) return false;
-            currNode = currentActionPlan.Current;
-        }
+        if (node != null && node.action.Complete && CanMoveForward())
+            if (MovedToNextAction()) return false;
 
+        print(message: $"Att. to use THIS action {node.action.functionality}");
         //Try start/restart current
         if (!currNode.action.CanStartThenStart())
         {
+            print(message: $"This action FAILED, attempting to move backward");
+
             //walk back cursor until it can run
             while (currentActionPlan.MovePrev()) // <- walks back
-                if (currentActionPlan.Current.action.CanStartThenStart()) // <- Attempts a start
+                if (currentActionPlan.Current.action.CanStartThenStart()) // <- Attempts a start{
+                {
+                    print(message: $"SUCCESS started PREV {currentActionPlan.Current.action}");
                     break; // <- if start successfull then break out the walk back
+                }
+                else
+                {
+                    print(message: $"FAIL to start PREV {currentActionPlan.Current.action}");
+
+                }
+
 
             //Whatrver node was succesfully started is where the cursor is at
             currNode = currentActionPlan.Current;
         }
 
-        outNode = currNode;
         return true;
 
     }
 
     //Same here ai -gen
-    void OnPreconditionLost()
+    public void OnPreconditionLost()
     {
         if (currentActionPlan?.Current == null) return;
 
@@ -308,7 +334,6 @@ public class GoapAgent : MonoBehaviour
         ActionPlan newActionPlan = new ActionPlan(chosenGoal, beliefs);
         currentActionPlan = newActionPlan;
         initialActionPlan = (ActionPlan)SerializationUtility.CreateCopy(newActionPlan);
-        node = currentActionPlan?.Current;
         print($"Generated new ActionPlan, node: {node}");
     }
 
@@ -317,18 +342,18 @@ public class GoapAgent : MonoBehaviour
         currentActionPlan = initialActionPlan;
     }
 
-    public void SatisfyPrecondition(IBelief satsifyBelief)
+    public void SatisfyPrecondition(IBelief satsifyBelief, bool val)
     {
-        print($"SATISFY: atempt satisfy {satsifyBelief.type} cur action {node.action}");
+        //print($"SATISFY: atempt satisfy {satsifyBelief.type} cur action {node.action}");
         if (node.action != null)
-            node.action.SatisfyPrecondition(satsifyBelief);
+            node.action.SatisfyPrecondition(satsifyBelief, val);
     }
 
-    public void SatisfyEffect(IBelief satsifyBelief)
+    public void SatisfyEffect(IBelief satsifyBelief, bool val)
     {
-        print($"SATISFY: atempt satisfy {satsifyBelief.type} cur action {node.action}");
+        //print($"SATISFY: atempt satisfy {satsifyBelief.type} cur action {node.action}");
         if (node.action != null)
-            node.action.SatisfyEffect(satsifyBelief);
+            node.action.SatisfyEffect(satsifyBelief, val);
 
     }
 }

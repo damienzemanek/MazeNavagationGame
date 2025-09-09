@@ -705,7 +705,7 @@ Transform:
   m_GameObject: {fileID: 93272011}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.75, y: 1.73, z: -1.92}
+  m_LocalPosition: {x: -28.75, y: -2.74, z: -16.2}
   m_LocalScale: {x: 2.0203, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -732,22 +732,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thinkDelay: 2
   thinkDelayCount: 0
+  resetActionQueueCount: 0
+  resetActionQueueCountsToReEvaluate: 5
   thinkDelayAmountsToReEvaluate: 25
-  previousActions: []
-  currentAction:
-    Preconditions: []
-    Effects:
-    - rid: 9200140633805422738
-    functionality:
-      rid: -2
+  currentActionPlan:
+    Nodes: []
   goals:
   - rid: 9200140611604185256
   - rid: 9200140633805422724
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
     - rid: 9200140611604185256
       type: {class: GoalSit, ns: , asm: Assembly-CSharp}
       data:
@@ -768,10 +763,10 @@ MonoBehaviour:
     - rid: 9200140633805422697
       type: {class: AgentAction, ns: , asm: Assembly-CSharp}
       data:
-        Preconditions: []
-        Effects: []
         functionality:
           rid: 9200140633805422702
+        Preconditions: []
+        Effects: []
     - rid: 9200140633805422702
       type: {class: IdleActionFunctionality, ns: , asm: Assembly-CSharp}
       data: 
@@ -787,12 +782,12 @@ MonoBehaviour:
     - rid: 9200140633805422725
       type: {class: AgentAction, ns: , asm: Assembly-CSharp}
       data:
+        functionality:
+          rid: 9200140633805422727
         Preconditions:
         - rid: 9200140633805422731
         Effects:
         - rid: 9200140641409433737
-        functionality:
-          rid: 9200140633805422727
     - rid: 9200140633805422727
       type: {class: FollowActionFunctionality, ns: , asm: Assembly-CSharp}
       data:
@@ -812,26 +807,16 @@ MonoBehaviour:
     - rid: 9200140633805422734
       type: {class: AgentAction, ns: , asm: Assembly-CSharp}
       data:
+        functionality:
+          rid: 9200140633805422735
         Preconditions: []
         Effects:
         - rid: 9200140633805422767
-        functionality:
-          rid: 9200140633805422735
     - rid: 9200140633805422735
       type: {class: WanderActionFunctionality, ns: , asm: Assembly-CSharp}
       data:
         agent: {fileID: 93272020}
         wanderRadius: 9
-    - rid: 9200140633805422738
-      type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
-      data:
-        _refreshing: 0
-        functionality:
-          rid: 9200140633805422744
-    - rid: 9200140633805422744
-      type: {class: BinaryBelief/BeliefCanSeePlayer, ns: , asm: Assembly-CSharp}
-      data:
-        viewSensor: {fileID: 0}
     - rid: 9200140633805422767
       type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
       data:
@@ -851,11 +836,11 @@ MonoBehaviour:
     - rid: 9200140641409433740
       type: {class: AgentAction, ns: , asm: Assembly-CSharp}
       data:
+        functionality:
+          rid: 9200140641409433744
         Preconditions:
         - rid: 9200140641409433741
         Effects: []
-        functionality:
-          rid: 9200140641409433744
     - rid: 9200140641409433741
       type: {class: BinaryBelief, ns: , asm: Assembly-CSharp}
       data:
@@ -872,6 +857,7 @@ MonoBehaviour:
         agent: {fileID: 93272020}
         sensor: {fileID: 93272021}
         attackObject: {fileID: 560905534}
+        attackCooldown: 1
     - rid: 9200140641409433750
       type: {class: BinaryBelief/BeliefCanAttackPlayer, ns: , asm: Assembly-CSharp}
       data:
@@ -13889,7 +13875,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0.5, z: -0.5, w: 0.5}
-  m_LocalPosition: {x: -6.56, y: 12.039999, z: -15.08}
+  m_LocalPosition: {x: -42.059998, y: 7.5699987, z: -29.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -43723,7 +43709,7 @@ Transform:
   m_GameObject: {fileID: 1604294074}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.56, y: 2.33, z: -15.08}
+  m_LocalPosition: {x: -42.059998, y: -2.1400003, z: -29.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

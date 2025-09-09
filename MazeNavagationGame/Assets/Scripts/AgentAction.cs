@@ -1,22 +1,20 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine;
-using System.Linq;
-using Sirenix.Utilities;
-using System;
-using UnityEngine.AI;
 
 
 [Serializable]
 public class AgentAction
 {
-    [SerializeReference] public List<IBelief> Preconditions = new List<IBelief>();
-    [SerializeReference] public List<IBelief> Effects = new List<IBelief>();
-    [SerializeReference] public IActionFunctionality functionality;
+    [SerializeReference][PropertyOrder(0)][BoxGroup("Functionality", ShowLabel = false)] public IActionFunctionality functionality;
+    [SerializeReference][PropertyOrder(10)] public List<IBelief> Preconditions = new List<IBelief>();
+    [SerializeReference][PropertyOrder(11)] public List<IBelief> Effects = new List<IBelief>();
     public bool Complete => functionality.Complete;
 
-    [ShowInInspector] public bool PreConditionsSatisfied => PreconditionsSatisfied();
-    [ShowInInspector] public bool EffectsSatisfied => Effectssatisfied();
+    [ShowInInspector, ReadOnly][PropertyOrder(8)] public bool PreConditionsSatisfied => PreconditionsSatisfied();
+    [ShowInInspector, ReadOnly][PropertyOrder(7)] public bool EffectsSatisfied => Effectssatisfied();
 
 
     public virtual void Initialize() { }
@@ -47,23 +45,23 @@ public class AgentAction
         return true;
     }
 
-    public void SatisfyPrecondition(IBelief belief)
+    public void SatisfyPrecondition(IBelief belief, bool val)
     {
-        Debug.Log("satisfied? : Action trying to satisfy cond " +  belief.type);
+        //Debug.Log("satisfied? : Action trying to satisfy cond " + belief.type);
         foreach (var precon in Preconditions)
         {
             if (precon == null) continue;
             if (precon.type != belief.type) continue;
-            precon.satisfied = true;
+            precon.satisfied = val;
 
             Debug.Log(message: $"Precon {precon.type} satisfied? : {precon.satisfied}");
 
         }
     }
 
-    public void SatisfyEffect(IBelief belief)
+    public void SatisfyEffect(IBelief belief, bool val)
     {
-        Debug.Log("satisfied? : Action trying to satisfy cond " + belief.type);
+        //Debug.Log("satisfied? : Action trying to satisfy cond " + belief.type);
         foreach (IBelief effect in Effects)
         {
             if (effect == null) continue;

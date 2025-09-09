@@ -31,14 +31,14 @@ public class AgentBelief<T> : IBelief
 {
     //Variables/properties
     protected GoapAgent agent;
-    [ShowInInspector][PropertyOrder(-10)] public virtual Beliefs type { get; }
+    [ShowInInspector][PropertyOrder(0)] public virtual Beliefs type { get; }
     public Beliefs GetBelief() => type;
-    [ShowInInspector][PropertyOrder(-20)] public bool satisfied { get; set; }
-    public string key { get; }
+    [ShowInInspector][PropertyOrder(1)] public bool satisfied { get; set; }
 
-    [SerializeField] bool _refreshing;
+    [SerializeField][PropertyOrder(2)] bool _refreshing;
     public bool refreshing { get => _refreshing; set => _refreshing = value; }
     [ShowInInspector]
+    [PropertyOrder(3)]
     public float refreshDelay
     {
         get
@@ -52,7 +52,7 @@ public class AgentBelief<T> : IBelief
     public float timeStamp { get; set; }
 
     public virtual T[] data { get; set; }
-    [ShowInInspector] public IGoal originalGoal { get; set; }
+    public IGoal originalGoal { get; set; }
 
     //Methods
     public virtual void SetAgent(GoapAgent agent) => this.agent = agent;
@@ -83,8 +83,8 @@ public class AgentBelief<T> : IBelief
             if (b is AgentBelief<T> beliefTyped && b.type == type)
             {
                 Debug.Log("precon updating precons");
-                SatisfyAPrecondition(b);
-                SatisfyAnEffect(b);
+                SatisfyAPrecondition(b, true);
+                SatisfyAnEffect(b, true);
                 buffer.Add(item: beliefTyped);
             }
 
@@ -93,14 +93,14 @@ public class AgentBelief<T> : IBelief
         timeStamp = Time.time;
     }
 
-    public virtual void SatisfyAPrecondition(IBelief givenBelief)
+    public virtual void SatisfyAPrecondition(IBelief givenBelief, bool val)
     {
-        agent.SatisfyPrecondition(givenBelief);
+        agent.SatisfyPrecondition(givenBelief, val);
     }
 
-    public virtual void SatisfyAnEffect(IBelief givenBelief)
+    public virtual void SatisfyAnEffect(IBelief givenBelief, bool val)
     {
-        agent.SatisfyEffect(givenBelief);
+        agent.SatisfyEffect(givenBelief, val);
     }
 
     public Action<IGoal> BeliefChangedCallback { get; set; }

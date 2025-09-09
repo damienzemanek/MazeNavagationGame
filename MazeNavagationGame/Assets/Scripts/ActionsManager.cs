@@ -1,9 +1,8 @@
 using System;
+using System.Collections;
 using Sirenix.OdinInspector;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
 
 
 public class ActionsManager : MonoBehaviour
@@ -81,7 +80,7 @@ public class FollowActionFunctionality : IActionFunctionality
     public Sensor attackRadiusSensor;
 
     public bool CanExecute { get => true; }
-    public bool Complete { get ; private set; }
+    public bool Complete { get; private set; }
     public FollowActionFunctionality() { }
 
     public bool CanStartThenStart()
@@ -120,6 +119,7 @@ public class AttackActionFunctionality : IActionFunctionality
     public Sensor sensor;
     public GameObject attackObject;
     bool attacking = false;
+    public float attackCooldown;
 
     public bool CanExecute { get => true; }
     public bool Complete { get; private set; }
@@ -127,16 +127,23 @@ public class AttackActionFunctionality : IActionFunctionality
 
     public bool CanStartThenStart()
     {
-        Debug.Log("ActionPlan -> Attempting Follow");
+        Debug.Log("ActionPlan -> Attemping ATTACK");
         if (!sensor.inRange.current) return false;
         return true;
     }
 
     public void Update(float delatTime)
     {
+        Debug.Log("Updating ATTACK");
         if (!sensor.inRange.current) return;
-        if(!attacking)
-            agent.SetDestination(sensor.lastSeenLoc.position);
+        if (!attacking)
+        {
+            Debug.Log("Attacking");
+            sensor.StartCoroutine(Attack(attackObject));
+            agent.SetDestination(target: sensor.lastSeenLoc.position);
+        }
+
+
     }
 
     IEnumerator Attack(GameObject atkObj)
@@ -145,6 +152,7 @@ public class AttackActionFunctionality : IActionFunctionality
         attacking = true;
         yield return new WaitForSeconds(3f);
         atkObj.SetActive(false);
+        yield return new WaitForSeconds(attackCooldown);
         attacking = false;
 
     }

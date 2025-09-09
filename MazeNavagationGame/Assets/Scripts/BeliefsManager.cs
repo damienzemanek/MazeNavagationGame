@@ -54,7 +54,7 @@ public class LocationBelief : AgentBelief<Vector3>
 {
     [SerializeReference] public ISensor<GoapAgent, Vector3> functionality;
 
-    [ShowInInspector] public Vector3[] Location => data;
+    [ShowInInspector][PropertyOrder(10)] public Vector3[] Location => data;
     [ShowInInspector]
     public override Beliefs type
     {
@@ -95,6 +95,7 @@ public class BinaryBelief : AgentBelief<bool>
     [SerializeReference] public ISensor<GoapAgent, bool> functionality;
 
     [ShowInInspector, ReadOnly]
+    [PropertyOrder(10)]
     public bool[] Is => functionality != null ? functionality.data : System.Array.Empty<bool>();
     [ShowInInspector]
     public override Beliefs type
@@ -115,24 +116,26 @@ public class BinaryBelief : AgentBelief<bool>
             return Beliefs.NoBeliefFound;
         }
     }
-    public override void SatisfyAPrecondition(IBelief givenBelief)
+    public override void SatisfyAPrecondition(IBelief givenBelief, bool val)
     {
         //Debug.Log($"PreCheck Binary Belief for {type} : {Is[0]}");
-        if (Is[0])
-            base.SatisfyAPrecondition(givenBelief);
+        base.SatisfyAPrecondition(givenBelief, Is[0]);
+        if (!Is[0])
+            agent.OnPreconditionLost();
     }
 
-    public override void SatisfyAnEffect(IBelief givenBelief)
+    public override void SatisfyAnEffect(IBelief givenBelief, bool val)
     {
         //Debug.Log($"PreCheck Binary Belief for {type} : {Is[0]}");
-        if (Is[0])
-            base.SatisfyAnEffect(givenBelief);
+        base.SatisfyAnEffect(givenBelief, Is[0]);
+
     }
 
     public BinaryBelief() { data = new bool[1]; }
     public override void UpdateBelief(List<AgentBelief<bool>> beliefs)
     {
         base.UpdateBelief(beliefs);
+        Debug.Log($"Attempting update belief data, with functionality {functionality}");
         data = functionality.Do(agent);
     }
 
@@ -186,7 +189,7 @@ public class BinaryBelief : AgentBelief<bool>
                 ret = false;
 
             data[0] = ret;
-            Debug.Log($"Thinking Checking Can See Player? {data[0]}");
+            Debug.Log($"Thinking Can SEE Player? {data[0]}");
 
             return data;
         }
@@ -209,7 +212,7 @@ public class BinaryBelief : AgentBelief<bool>
                 ret = false;
 
             data[0] = ret;
-            Debug.Log($"Thinking Checking Can See Player? {data[0]}");
+            Debug.Log($"Thinking Can ATTACK Player? {data[0]}");
 
             return data;
         }

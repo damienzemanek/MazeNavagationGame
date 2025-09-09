@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using UnityEngine;
 
 [Serializable]
 public class ActionPlan
@@ -11,7 +12,7 @@ public class ActionPlan
     public NodeAction Tail { get; private set; }
     public NodeAction Current { get; private set; }
 
-    [ShowInInspector] public List<NodeAction> Nodes = new();
+    [SerializeReference] public List<NodeAction> Nodes = new();
     public ActionPlan(IGoal goal, HashSet<IBelief> beliefs)
     {
         Goal = goal;
@@ -33,12 +34,14 @@ public class ActionPlan
             prev = n;
         }
         Tail = prev;
+        Current = Head;
     }
 
     public bool MoveNext()
     {
         if (Current?.next == null) return false;
         Current = Current.next;
+        Debug.Log($"walk forward success :  {Current.prev.action.functionality} --> {Current.action.functionality} ");
         return true;
     }
 
@@ -46,6 +49,8 @@ public class ActionPlan
     {
         if (Current?.prev == null) return false;
         Current = Current.prev;
+        Debug.Log($"walk BACK success :  {Current.next.action.functionality} --> {Current.action.functionality} ");
+
         return true;
     }
 
@@ -53,10 +58,20 @@ public class ActionPlan
 }
 
 
+[Serializable]
 public class NodeAction
 {
-    public readonly AgentAction action;
-    [DisplayAsString] public NodeAction prev, next;
+    [ShowInInspector][PropertyOrder(-99)] public string Name => (action != null) ? GetActionName() : "";
+    [ShowInInspector] public readonly AgentAction action;
+    public NodeAction prev, next;
+
+    [ShowInInspector] public string prevName => (prev != null) ? GetPrevName() : "";
+    [ShowInInspector] public string nextName => (next != null) ? GetNextName() : "";
+
+    public string GetPrevName() => prev.action.functionality.ToString();
+    public string GetNextName() => next.action.functionality.ToString();
+
+    public string GetActionName() => action.functionality.ToString();
 
     public NodeAction(AgentAction action) => this.action = action;
 
