@@ -35,12 +35,14 @@ public class EntityMovement : MonoBehaviour
 
     void Dash()
     {
-        if(!dashOnCooldown)
+        if (!dashOnCooldown)
         {
             rb.AddForce(transform.right * dashMultiplier, ForceMode.Impulse);
             rb.AddForce(Vector3.up * dashMultiplier / 4, ForceMode.Impulse);
             StartCoroutine(DashCooldown());
         }
+
+
 
     }
 
@@ -75,7 +77,7 @@ public class EntityMovement : MonoBehaviour
             if (moveInput.x < 0.5)
                 rb.AddForce(0, 0, 1 * moveAmount);
         }
-        if(moveInput.y != 0)
+        if (moveInput.y != 0)
         {
             if (moveInput.y > 0.5)
                 rb.AddForce(1 * moveAmount, 0, 0);

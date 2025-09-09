@@ -119,7 +119,8 @@ public class AttackActionFunctionality : IActionFunctionality
     public Sensor sensor;
     public GameObject attackObject;
     bool attacking = false;
-    public float attackCooldown;
+    public float attackLength = 1f;
+    public float attackCooldown = 0.5f;
 
     public bool CanExecute { get => true; }
     public bool Complete { get; private set; }
@@ -150,7 +151,7 @@ public class AttackActionFunctionality : IActionFunctionality
     {
         atkObj.SetActive(true);
         attacking = true;
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(attackLength);
         atkObj.SetActive(false);
         yield return new WaitForSeconds(attackCooldown);
         attacking = false;
