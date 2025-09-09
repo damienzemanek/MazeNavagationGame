@@ -15068,6 +15068,8 @@ GameObject:
   - component: {fileID: 560905537}
   - component: {fileID: 560905536}
   - component: {fileID: 560905535}
+  - component: {fileID: 560905539}
+  - component: {fileID: 560905538}
   m_Layer: 6
   m_Name: atkobj
   m_TagString: Untagged
@@ -15143,6 +15145,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 93272017}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &560905538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 560905534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 150db05ecea30d64086d3fe474f36e2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &560905539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 560905534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a35bddb34666644a9c25f1aa12ddb2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Name: 
+  dist: 0
+  inRange:
+    current: 0
+    last: 0
+  _withinRange: 0
+  lastSeenLoc: {fileID: 0}
 --- !u!1 &586154861
 GameObject:
   m_ObjectHideFlags: 0
