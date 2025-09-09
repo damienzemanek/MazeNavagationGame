@@ -216,7 +216,7 @@ public class GoapAgent : MonoBehaviour
         {
             if (node.action.CanStartThenStart())
             {
-                print($"SUCCESS moved forward, {node.prevName} --> {node.nextName}");
+                print($"SUCCESS moved forward, {node.prevName} --> {node.Name}");
                 return true;
             }
             else
@@ -318,9 +318,10 @@ public class GoapAgent : MonoBehaviour
     }
 
     //Same here ai -gen
-    public void OnPreconditionLost()
+    public void OnPreconditionLost(IBelief belief)
     {
         if (currentActionPlan?.Current == null) return;
+        if (!currentActionPlan.Current.HasPrecondition(belief)) return;
 
         do
         {

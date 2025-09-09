@@ -121,7 +121,7 @@ public class BinaryBelief : AgentBelief<bool>
         //Debug.Log($"PreCheck Binary Belief for {type} : {Is[0]}");
         base.SatisfyAPrecondition(givenBelief, Is[0]);
         if (!Is[0])
-            agent.OnPreconditionLost();
+            agent.OnPreconditionLost(givenBelief);
     }
 
     public override void SatisfyAnEffect(IBelief givenBelief, bool val)

@@ -75,5 +75,10 @@ public class NodeAction
 
     public NodeAction(AgentAction action) => this.action = action;
 
+    public bool HasPrecondition(IBelief belief)
+    {
+        return (action.Preconditions.Contains(belief)) ? true : false;
+    }
+
 }
 
